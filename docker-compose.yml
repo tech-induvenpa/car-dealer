@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: car_dealer
+      POSTGRES_PASSWORD: car_dealer
+      POSTGRES_DB: car_dealer
+    ports:
+      - "5433:5432"
+    volumes:
+      - car_dealer_pgdata:/var/lib/postgresql/data
+
+volumes:
+  car_dealer_pgdata:
