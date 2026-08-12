@@ -103,5 +103,23 @@ model Vehicle {
   updatedAt   DateTime @updatedAt
 }
 
-// Resto de modelos por bounded context (Lead, AnalyticsEvent) se agregan
+enum LeadStatus {
+  NUEVO
+  CONTACTADO
+  CONVERTIDO
+  DESCARTADO
+}
+
+model Lead {
+  id         Int        @id @default(autoincrement())
+  firstName  String
+  lastName   String
+  phone      String
+  vehicleIds Int[]
+  status     LeadStatus @default(NUEVO)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+// Resto de modelos por bounded context (AnalyticsEvent) se agregan
 // a medida que se construye cada módulo — ver apps/backend/src/modules/*/CONTEXT.md
