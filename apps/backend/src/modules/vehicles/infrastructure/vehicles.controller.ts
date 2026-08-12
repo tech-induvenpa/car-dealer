@@ -17,6 +17,8 @@ import { JwtAuthGuard } from '../../auth/infrastructure/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../../auth/infrastructure/optional-jwt-auth.guard';
 import { ArchiveVehicleCommand } from '../application/commands/archive-vehicle.command';
 import { CreateVehicleCommand } from '../application/commands/create-vehicle.command';
+import { ImportVehiclesCommand } from '../application/commands/import-vehicles.command';
+import { ImportVehiclesResult } from '../application/commands/import-vehicles.handler';
 import { PublishVehicleCommand } from '../application/commands/publish-vehicle.command';
 import { UpdateVehicleCommand } from '../application/commands/update-vehicle.command';
 import { CompareVehiclesResult } from '../application/queries/compare-vehicles-by-id.handler';
@@ -24,56 +26,12 @@ import { CompareVehiclesByIdQuery } from '../application/queries/compare-vehicle
 import { GetVehicleByIdQuery } from '../application/queries/get-vehicle-by-id.query';
 import { ListVehiclesQuery } from '../application/queries/list-vehicles.query';
 import { VehicleNotFoundException } from '../domain/exceptions/vehicle-not-found.exception';
-import { CreateVehicleProps } from '../domain/vehicle.aggregate';
+import { parseCsvVehicleRows } from './csv-vehicle-row.mapper';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { ListVehiclesDto } from './dto/list-vehicles.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { VehicleReadDto } from './persistence/vehicle-read.mapper';
-
-// ponytail: create y update comparten forma (reemplazo completo) — un solo
-// mapeo DTO->props para los dos.
-function toVehicleProps(dto: CreateVehicleDto): CreateVehicleProps {
-  return {
-    brand: dto.brand,
-    model: dto.model,
-    trim: dto.trim,
-    year: dto.year,
-    price: dto.price,
-    priceIncludes: dto.priceIncludes ?? null,
-    mainImageUrl: dto.mainImageUrl,
-    category: dto.category,
-    specs: {
-      displacementCc: dto.specs.displacementCc ?? null,
-      cylinders: dto.specs.cylinders ?? null,
-      horsepowerHp: dto.specs.horsepowerHp ?? null,
-      torqueNm: dto.specs.torqueNm ?? null,
-      fuelType: dto.specs.fuelType,
-      transmissionType: dto.specs.transmissionType,
-      transmissionSpeeds: dto.specs.transmissionSpeeds ?? null,
-      driveType: dto.specs.driveType,
-      lengthMm: dto.specs.lengthMm ?? null,
-      widthMm: dto.specs.widthMm ?? null,
-      heightMm: dto.specs.heightMm ?? null,
-      wheelbaseMm: dto.specs.wheelbaseMm ?? null,
-      trunkCapacityL: dto.specs.trunkCapacityL ?? null,
-      weightKg: dto.specs.weightKg ?? null,
-      passengerCapacity: dto.specs.passengerCapacity ?? null,
-      fuelEconomyValue: dto.specs.fuelEconomyValue ?? null,
-      fuelEconomyUnit: dto.specs.fuelEconomyUnit ?? null,
-      tankCapacityL: dto.specs.tankCapacityL ?? null,
-      airbagsCount: dto.specs.airbagsCount ?? null,
-      hasAbs: dto.specs.hasAbs,
-      hasStabilityControl: dto.specs.hasStabilityControl,
-      hasRearCamera: dto.specs.hasRearCamera,
-      seatType: dto.specs.seatType ?? null,
-      hasBluetooth: dto.specs.hasBluetooth,
-      hasCarPlay: dto.specs.hasCarPlay,
-      warrantyYears: dto.specs.warrantyYears ?? null,
-      warrantyKm: dto.specs.warrantyKm ?? null,
-      highlights: dto.specs.highlights,
-    },
-  };
-}
+import { toVehicleProps } from './persistence/vehicle-write.mapper';
 
 @Controller('vehicles')
 export class VehiclesController {
@@ -159,5 +117,15 @@ export class VehiclesController {
   @UseGuards(JwtAuthGuard)
   async publish(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.commandBus.execute<PublishVehicleCommand, void>(new PublishVehicleCommand(id));
+  }
+
+  @Post('import')
+  @UseGuards(JwtAuthGuard)
+  async import(@Body() body: unknown): Promise<ImportVehiclesResult> {
+    const rows =
+      typeof body === 'string' ? parseCsvVehicleRows(body) : Array.isArray(body) ? body : [];
+    return this.commandBus.execute<ImportVehiclesCommand, ImportVehiclesResult>(
+      new ImportVehiclesCommand(rows),
+    );
   }
 }
