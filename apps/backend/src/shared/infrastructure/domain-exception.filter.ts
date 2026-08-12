@@ -4,6 +4,7 @@ import { DomainException } from '../domain/domain.exception';
 
 const REASON_PHRASE: Record<number, string> = {
   [HttpStatus.BAD_REQUEST]: 'Bad Request',
+  [HttpStatus.UNAUTHORIZED]: 'Unauthorized',
   [HttpStatus.NOT_FOUND]: 'Not Found',
 };
 
