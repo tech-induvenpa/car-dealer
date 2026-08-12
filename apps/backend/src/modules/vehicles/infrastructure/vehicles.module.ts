@@ -3,6 +3,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { AuthModule } from '../../auth/auth.module';
 import { ArchiveVehicleHandler } from '../application/commands/archive-vehicle.handler';
 import { CreateVehicleHandler } from '../application/commands/create-vehicle.handler';
+import { ImportVehiclesHandler } from '../application/commands/import-vehicles.handler';
 import { PublishVehicleHandler } from '../application/commands/publish-vehicle.handler';
 import { UpdateVehicleHandler } from '../application/commands/update-vehicle.handler';
 import { CompareVehiclesByIdHandler } from '../application/queries/compare-vehicles-by-id.handler';
@@ -20,6 +21,7 @@ import { VehiclesController } from './vehicles.controller';
     UpdateVehicleHandler,
     ArchiveVehicleHandler,
     PublishVehicleHandler,
+    ImportVehiclesHandler,
     ListVehiclesHandler,
     GetVehicleByIdHandler,
     CompareVehiclesByIdHandler,
