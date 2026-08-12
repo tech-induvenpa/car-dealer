@@ -68,15 +68,15 @@ export interface ReconstructVehicleProps extends CreateVehicleProps {
 export class Vehicle extends AggregateRoot {
   private constructor(
     private readonly _id: number | null,
-    private readonly _brand: Brand,
-    private readonly _model: string,
-    private readonly _trim: string,
-    private readonly _year: number,
-    private readonly _price: Price,
-    private readonly _mainImageUrl: string,
-    private readonly _category: VehicleCategory,
-    private readonly _specs: VehicleSpecs,
-    private readonly _fuelEconomyNormalizedKmPerL: number | null,
+    private _brand: Brand,
+    private _model: string,
+    private _trim: string,
+    private _year: number,
+    private _price: Price,
+    private _mainImageUrl: string,
+    private _category: VehicleCategory,
+    private _specs: VehicleSpecs,
+    private _fuelEconomyNormalizedKmPerL: number | null,
     private readonly _isPublished: boolean,
   ) {
     super();
@@ -116,6 +116,25 @@ export class Vehicle extends AggregateRoot {
       props.fuelEconomyNormalizedKmPerL,
       props.isPublished,
     );
+  }
+
+  // ponytail: reemplazo completo (no patch) — el form admin reenvía toda
+  // la ficha técnica. Valida/computa todo antes de mutar: si algo lanza,
+  // el vehículo queda intacto y el handler no persiste nada.
+  update(props: CreateVehicleProps): void {
+    Vehicle.assertValidYear(props.year);
+    const price = Price.create(props.price, props.priceIncludes);
+    const normalized = Vehicle.computeNormalizedFuelEconomy(props.specs);
+
+    this._brand = props.brand;
+    this._model = props.model;
+    this._trim = props.trim;
+    this._year = props.year;
+    this._price = price;
+    this._mainImageUrl = props.mainImageUrl;
+    this._category = props.category;
+    this._specs = props.specs;
+    this._fuelEconomyNormalizedKmPerL = normalized;
   }
 
   private static assertValidYear(year: number): void {

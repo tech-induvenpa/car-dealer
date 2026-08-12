@@ -100,4 +100,41 @@ describe('Vehicle aggregate', () => {
     const vehicle = Vehicle.create(validProps());
     expect(vehicle.fuelEconomyNormalizedKmPerL).toBeNull();
   });
+
+  describe('update', () => {
+    it('replaces the full ficha técnica', () => {
+      const vehicle = Vehicle.create(validProps());
+      vehicle.update(validProps({ model: 'CS35 Plus Facelift', price: 26000 }));
+      expect(vehicle.model).toBe('CS35 Plus Facelift');
+      expect(vehicle.price.amount).toBe(26000);
+    });
+
+    it('recomputes normalized fuel economy on update', () => {
+      const vehicle = Vehicle.create(validProps());
+      vehicle.update(
+        validProps({
+          specs: {
+            ...validProps().specs,
+            fuelEconomyValue: 10,
+            fuelEconomyUnit: FuelEconomyUnit.L_POR_100KM,
+          },
+        }),
+      );
+      expect(vehicle.fuelEconomyNormalizedKmPerL).toBeCloseTo(10, 2);
+    });
+
+    it('rejects a non-positive price and leaves the vehicle unchanged', () => {
+      const vehicle = Vehicle.create(validProps());
+      expect(() => vehicle.update(validProps({ price: 0 }))).toThrow(InvalidPriceException);
+      expect(vehicle.price.amount).toBe(24000);
+    });
+
+    it('rejects an out-of-range year and leaves the vehicle unchanged', () => {
+      const vehicle = Vehicle.create(validProps());
+      expect(() => vehicle.update(validProps({ year: 1989 }))).toThrow(
+        InvalidVehicleYearException,
+      );
+      expect(vehicle.year).toBe(2024);
+    });
+  });
 });
