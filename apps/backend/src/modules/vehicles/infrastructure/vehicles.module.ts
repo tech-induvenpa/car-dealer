@@ -5,6 +5,8 @@ import { ArchiveVehicleHandler } from '../application/commands/archive-vehicle.h
 import { CreateVehicleHandler } from '../application/commands/create-vehicle.handler';
 import { PublishVehicleHandler } from '../application/commands/publish-vehicle.handler';
 import { UpdateVehicleHandler } from '../application/commands/update-vehicle.handler';
+import { GetVehicleByIdHandler } from '../application/queries/get-vehicle-by-id.handler';
+import { ListVehiclesHandler } from '../application/queries/list-vehicles.handler';
 import { VEHICLE_REPOSITORY } from '../domain/ports/vehicle.repository';
 import { VehicleRepositoryAdapter } from './persistence/vehicle.repository.adapter';
 import { VehiclesController } from './vehicles.controller';
@@ -17,6 +19,8 @@ import { VehiclesController } from './vehicles.controller';
     UpdateVehicleHandler,
     ArchiveVehicleHandler,
     PublishVehicleHandler,
+    ListVehiclesHandler,
+    GetVehicleByIdHandler,
     { provide: VEHICLE_REPOSITORY, useClass: VehicleRepositoryAdapter },
   ],
 })
