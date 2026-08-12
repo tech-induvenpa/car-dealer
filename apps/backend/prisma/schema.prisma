@@ -14,5 +14,94 @@ model AdminUser {
   createdAt    DateTime @default(now())
 }
 
-// Resto de modelos por bounded context (Vehicle, Lead, AnalyticsEvent) se agregan
+enum Brand {
+  TOYOTA
+  KIA
+  CHANGAN
+}
+
+enum VehicleCategory {
+  SUV
+  SEDAN
+  PICKUP
+  HATCHBACK
+  COMPACTO
+}
+
+enum FuelType {
+  GASOLINA
+  DIESEL
+  HIBRIDO
+  ELECTRICO
+}
+
+enum TransmissionType {
+  MANUAL
+  AUTOMATICA
+  CVT
+  DCT
+}
+
+enum DriveType {
+  FWD_4X2
+  AWD_4X4
+}
+
+enum FuelEconomyUnit {
+  KM_POR_GAL
+  L_POR_100KM
+}
+
+model Vehicle {
+  id            Int             @id @default(autoincrement())
+  brand         Brand
+  model         String
+  trim          String
+  year          Int
+  price         Decimal         @db.Decimal(10, 2)
+  priceIncludes String?
+  mainImageUrl  String
+  category      VehicleCategory
+
+  displacementCc     Int?
+  cylinders          Int?
+  horsepowerHp       Int?
+  torqueNm           Int?
+  fuelType           FuelType
+  transmissionType   TransmissionType
+  transmissionSpeeds Int?
+  driveType          DriveType
+
+  lengthMm          Int?
+  widthMm           Int?
+  heightMm          Int?
+  wheelbaseMm       Int?
+  trunkCapacityL    Int?
+  weightKg          Int?
+  passengerCapacity Int?
+
+  fuelEconomyValue            Decimal?         @db.Decimal(5, 2)
+  fuelEconomyUnit             FuelEconomyUnit?
+  fuelEconomyNormalizedKmPerL Decimal?         @db.Decimal(5, 2)
+  tankCapacityL               Int?
+
+  airbagsCount        Int?
+  hasAbs              Boolean @default(false)
+  hasStabilityControl Boolean @default(false)
+  hasRearCamera       Boolean @default(false)
+
+  seatType     String?
+  hasBluetooth Boolean @default(false)
+  hasCarPlay   Boolean @default(false)
+
+  warrantyYears Int?
+  warrantyKm    Int?
+  highlights    String[]
+
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Resto de modelos por bounded context (Lead, AnalyticsEvent) se agregan
 // a medida que se construye cada módulo — ver apps/backend/src/modules/*/CONTEXT.md
