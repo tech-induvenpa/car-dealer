@@ -69,15 +69,14 @@ describe('Vehicles — invariantes end-to-end (INV-1 a INV-7)', () => {
   }
 
   it('INV-3: un vehículo con price <= 0 nunca se persiste (alta individual)', async () => {
-    const before = await prisma.vehicle.count();
-
     await request(app.getHttpServer())
       .post('/vehicles')
       .set('Authorization', `Bearer ${token}`)
       .send(baseVehicle({ model: 'INV-3 individual', price: 0 }))
       .expect(400);
 
-    expect(await prisma.vehicle.count()).toBe(before);
+    const row = await prisma.vehicle.findFirst({ where: { model: 'INV-3 individual' } });
+    expect(row).toBeNull();
   });
 
   it('INV-3 + INV-4: import masivo nunca persiste price <= 0, ni bloquea las filas válidas del lote', async () => {

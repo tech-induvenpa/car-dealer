@@ -21,7 +21,8 @@
       "json",
       "ts"
     ],
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "maxWorkers": 1
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",
