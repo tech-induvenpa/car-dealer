@@ -12,10 +12,15 @@ _Avoid_: prospecto, cliente (todavía no es un cliente), cotización (esa es la 
 El set de 2 a 4 IDs de Vehículo que el comprador tenía en pantalla al enviar el Lead — es una foto del momento, no una referencia viva a "lo que esté comparando ahora".
 _Avoid_: carrito, selección.
 
+**Estado del Lead**:
+El progreso del seguimiento comercial de un Lead por parte del Administrador de catálogo: `NUEVO` (al crear) → `CONTACTADO` → `CONVERTIDO` / `DESCARTADO`. Solo avanza — nunca vuelve a un estado anterior, y `CONVERTIDO`/`DESCARTADO` son finales. Es lo único que cambia después de creado un Lead; el nombre/teléfono/Comparación asociada nunca se editan.
+_Avoid_: etapa, pipeline (es el concepto técnico detrás, "Estado" es el término de dominio).
+
 ## Relationships
 
 - Un **Lead** referencia uno o más **Vehículo** (por ID, desde Catalog) — en la práctica entre 1 y 4, siguiendo la regla del comparador, aunque el dominio solo exige al menos 1.
 - Enviar un **Lead** dispara un `LeadSubmittedEvent`, consumido por Analytics — Leads no depende de Analytics ni sabe que existe.
+- Un **Lead** tiene exactamente un **Estado del Lead**, que solo el Administrador de catálogo cambia manualmente.
 
 ## Example dialogue
 
