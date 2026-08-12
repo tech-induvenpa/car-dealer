@@ -19,6 +19,8 @@ import { ArchiveVehicleCommand } from '../application/commands/archive-vehicle.c
 import { CreateVehicleCommand } from '../application/commands/create-vehicle.command';
 import { PublishVehicleCommand } from '../application/commands/publish-vehicle.command';
 import { UpdateVehicleCommand } from '../application/commands/update-vehicle.command';
+import { CompareVehiclesResult } from '../application/queries/compare-vehicles-by-id.handler';
+import { CompareVehiclesByIdQuery } from '../application/queries/compare-vehicles-by-id.query';
 import { GetVehicleByIdQuery } from '../application/queries/get-vehicle-by-id.query';
 import { ListVehiclesQuery } from '../application/queries/list-vehicles.query';
 import { VehicleNotFoundException } from '../domain/exceptions/vehicle-not-found.exception';
@@ -93,6 +95,19 @@ export class VehiclesController {
         maxPrice: query.maxPrice,
         includeUnpublished: isAuthenticated,
       }),
+    );
+  }
+
+  // Debe declararse antes de @Get(':id') — Nest resuelve rutas en orden de
+  // declaración y ':id' capturaría "compare" como si fuera un id.
+  @Get('compare')
+  async compare(@Query('ids') idsParam?: string): Promise<CompareVehiclesResult> {
+    const ids = (idsParam ?? '')
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => !Number.isNaN(n));
+    return this.queryBus.execute<CompareVehiclesByIdQuery, CompareVehiclesResult>(
+      new CompareVehiclesByIdQuery(ids),
     );
   }
 
