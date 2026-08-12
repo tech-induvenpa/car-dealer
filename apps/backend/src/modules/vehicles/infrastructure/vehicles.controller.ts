@@ -1,13 +1,32 @@
-import { Body, Controller, HttpCode, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { Request } from 'express';
 import { JwtAuthGuard } from '../../auth/infrastructure/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../../auth/infrastructure/optional-jwt-auth.guard';
 import { ArchiveVehicleCommand } from '../application/commands/archive-vehicle.command';
 import { CreateVehicleCommand } from '../application/commands/create-vehicle.command';
 import { PublishVehicleCommand } from '../application/commands/publish-vehicle.command';
 import { UpdateVehicleCommand } from '../application/commands/update-vehicle.command';
+import { GetVehicleByIdQuery } from '../application/queries/get-vehicle-by-id.query';
+import { ListVehiclesQuery } from '../application/queries/list-vehicles.query';
+import { VehicleNotFoundException } from '../domain/exceptions/vehicle-not-found.exception';
 import { CreateVehicleProps } from '../domain/vehicle.aggregate';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
+import { ListVehiclesDto } from './dto/list-vehicles.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
+import { VehicleReadDto } from './persistence/vehicle-read.mapper';
 
 // ponytail: create y update comparten forma (reemplazo completo) — un solo
 // mapeo DTO->props para los dos.
@@ -56,7 +75,42 @@ function toVehicleProps(dto: CreateVehicleDto): CreateVehicleProps {
 
 @Controller('vehicles')
 export class VehiclesController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Get()
+  @UseGuards(OptionalJwtAuthGuard)
+  async list(@Query() query: ListVehiclesDto, @Req() req: Request): Promise<VehicleReadDto[]> {
+    const isAuthenticated = !!req.user;
+    return this.queryBus.execute<ListVehiclesQuery, VehicleReadDto[]>(
+      new ListVehiclesQuery({
+        brand: query.brand,
+        category: query.category,
+        search: query.search,
+        minPrice: query.minPrice,
+        maxPrice: query.maxPrice,
+        includeUnpublished: isAuthenticated,
+      }),
+    );
+  }
+
+  @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
+  async getById(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+  ): Promise<VehicleReadDto> {
+    const vehicle = await this.queryBus.execute<GetVehicleByIdQuery, VehicleReadDto | null>(
+      new GetVehicleByIdQuery(id),
+    );
+    const isAuthenticated = !!req.user;
+    if (!vehicle || (!vehicle.isPublished && !isAuthenticated)) {
+      throw new VehicleNotFoundException(id);
+    }
+    return vehicle;
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard)
