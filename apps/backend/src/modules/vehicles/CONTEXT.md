@@ -32,11 +32,24 @@ _Avoid_: tipo, segmento.
 Sacar un Vehículo del catálogo público (`isPublished = false`) sin borrar el registro — preserva la integridad de los Leads y Eventos de Analytics que lo referencian.
 _Avoid_: borrar, eliminar (implican hard-delete, que este contexto nunca hace).
 
+**Comparación**:
+El resultado de evaluar entre 2 y 4 Vehículos lado a lado: incluye los datos completos de cada uno, el Aviso de categoría dispar (si aplica) y el Ganador de comparación por cada campo que lo tenga.
+_Avoid_: comparativa.
+
+**Aviso de categoría dispar**:
+Mensaje no bloqueante que se muestra cuando los Vehículos de una Comparación pertenecen a Categorías consideradas muy distintas (ej. SUV vs Compacto) — informa, nunca impide comparar.
+_Avoid_: warning, alerta.
+
+**Ganador de comparación**:
+Dentro de una Comparación, el Vehículo cuyo valor es mejor en un campo específico de la Ficha técnica (ej. mayor caballaje, menor precio). Solo aplica a campos con una dirección de "mejor" bien definida — campos ambiguos (peso, dimensiones) o categóricos no tienen Ganador.
+_Avoid_: mejor valor.
+
 ## Relationships
 
 - Un **Vehículo** tiene exactamente una **Ficha técnica** (embebida, no es un aggregate separado).
 - Un **Vehículo** pertenece a una **Marca** (Toyota/Kia/Changan) y una **Categoría**.
 - **Leads** y **Eventos de Analytics** referencian a un **Vehículo** solo por ID — Catalog nunca depende de ellos.
+- Una **Comparación** agrupa entre 2 y 4 **Vehículos** y puede producir un **Aviso de categoría dispar** y un **Ganador de comparación** por campo.
 
 ## Example dialogue
 
@@ -46,3 +59,4 @@ _Avoid_: borrar, eliminar (implican hard-delete, que este contexto nunca hace).
 ## Flagged ambiguities
 
 - El **Precio** se discutió inicialmente como posible desglose (IVA, matriculación, etc. por separado) — resuelto: un solo campo todo-incluido + texto libre "incluye", sin desglose estructurado en el MVP.
+- El consumo se guarda dos veces (tal como lo carga el admin + normalizado a KM_POR_L) — resuelto: preserva fidelidad con la ficha del fabricante para mostrar, y permite comparar sin reconvertir unidades en cada Comparación.
