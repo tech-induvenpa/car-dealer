@@ -1,5 +1,7 @@
 import { InvalidPriceException } from './exceptions/invalid-price.exception';
 import { InvalidVehicleYearException } from './exceptions/invalid-vehicle-year.exception';
+import { VehicleAlreadyArchivedException } from './exceptions/vehicle-already-archived.exception';
+import { VehicleAlreadyPublishedException } from './exceptions/vehicle-already-published.exception';
 import { CreateVehicleProps, Vehicle } from './vehicle.aggregate';
 import {
   Brand,
@@ -135,6 +137,49 @@ describe('Vehicle aggregate', () => {
         InvalidVehicleYearException,
       );
       expect(vehicle.year).toBe(2024);
+    });
+  });
+
+  describe('archive / publish', () => {
+    function reconstructedPublished(): Vehicle {
+      return Vehicle.reconstruct({
+        ...validProps(),
+        id: 1,
+        fuelEconomyNormalizedKmPerL: null,
+        isPublished: true,
+      });
+    }
+
+    it('archives a published vehicle', () => {
+      const vehicle = reconstructedPublished();
+      vehicle.archive();
+      expect(vehicle.isPublished).toBe(false);
+    });
+
+    it('rejects archiving an already-archived vehicle', () => {
+      const vehicle = reconstructedPublished();
+      vehicle.archive();
+      expect(() => vehicle.archive()).toThrow(VehicleAlreadyArchivedException);
+    });
+
+    it('publishes an archived vehicle', () => {
+      const vehicle = reconstructedPublished();
+      vehicle.archive();
+      vehicle.publish();
+      expect(vehicle.isPublished).toBe(true);
+    });
+
+    it('rejects publishing an already-published vehicle', () => {
+      const vehicle = reconstructedPublished();
+      expect(() => vehicle.publish()).toThrow(VehicleAlreadyPublishedException);
+    });
+
+    it('never changes the id when archiving or publishing', () => {
+      const vehicle = reconstructedPublished();
+      vehicle.archive();
+      expect(vehicle.id).toBe(1);
+      vehicle.publish();
+      expect(vehicle.id).toBe(1);
     });
   });
 });

@@ -1,7 +1,9 @@
-import { Body, Controller, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from '../../auth/infrastructure/jwt-auth.guard';
+import { ArchiveVehicleCommand } from '../application/commands/archive-vehicle.command';
 import { CreateVehicleCommand } from '../application/commands/create-vehicle.command';
+import { PublishVehicleCommand } from '../application/commands/publish-vehicle.command';
 import { UpdateVehicleCommand } from '../application/commands/update-vehicle.command';
 import { CreateVehicleProps } from '../domain/vehicle.aggregate';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
@@ -74,5 +76,19 @@ export class VehiclesController {
     await this.commandBus.execute<UpdateVehicleCommand, void>(
       new UpdateVehicleCommand(id, toVehicleProps(dto)),
     );
+  }
+
+  @Post(':id/archive')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async archive(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.commandBus.execute<ArchiveVehicleCommand, void>(new ArchiveVehicleCommand(id));
+  }
+
+  @Post(':id/publish')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async publish(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.commandBus.execute<PublishVehicleCommand, void>(new PublishVehicleCommand(id));
   }
 }

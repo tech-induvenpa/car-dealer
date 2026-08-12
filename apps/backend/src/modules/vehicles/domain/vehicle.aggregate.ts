@@ -1,6 +1,8 @@
 import { AggregateRoot } from '@nestjs/cqrs';
 import { Price } from './value-objects/price.value-object';
 import { InvalidVehicleYearException } from './exceptions/invalid-vehicle-year.exception';
+import { VehicleAlreadyArchivedException } from './exceptions/vehicle-already-archived.exception';
+import { VehicleAlreadyPublishedException } from './exceptions/vehicle-already-published.exception';
 import { normalizeFuelEconomy } from './normalize-fuel-economy';
 import {
   Brand,
@@ -77,7 +79,7 @@ export class Vehicle extends AggregateRoot {
     private _category: VehicleCategory,
     private _specs: VehicleSpecs,
     private _fuelEconomyNormalizedKmPerL: number | null,
-    private readonly _isPublished: boolean,
+    private _isPublished: boolean,
   ) {
     super();
   }
@@ -135,6 +137,20 @@ export class Vehicle extends AggregateRoot {
     this._category = props.category;
     this._specs = props.specs;
     this._fuelEconomyNormalizedKmPerL = normalized;
+  }
+
+  archive(): void {
+    if (!this._isPublished) {
+      throw new VehicleAlreadyArchivedException(this._id!);
+    }
+    this._isPublished = false;
+  }
+
+  publish(): void {
+    if (this._isPublished) {
+      throw new VehicleAlreadyPublishedException(this._id!);
+    }
+    this._isPublished = true;
   }
 
   private static assertValidYear(year: number): void {
