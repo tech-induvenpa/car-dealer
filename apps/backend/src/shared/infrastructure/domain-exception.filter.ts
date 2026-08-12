@@ -2,13 +2,19 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/commo
 import { Response } from 'express';
 import { DomainException } from '../domain/domain.exception';
 
+const REASON_PHRASE: Record<number, string> = {
+  [HttpStatus.BAD_REQUEST]: 'Bad Request',
+  [HttpStatus.NOT_FOUND]: 'Not Found',
+};
+
 @Catch(DomainException)
 export class DomainExceptionFilter implements ExceptionFilter {
   catch(exception: DomainException, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse<Response>();
-    response.status(HttpStatus.BAD_REQUEST).json({
-      statusCode: HttpStatus.BAD_REQUEST,
-      error: 'Bad Request',
+    const status = exception.httpStatus;
+    response.status(status).json({
+      statusCode: status,
+      error: REASON_PHRASE[status] ?? 'Bad Request',
       message: exception.message,
     });
   }
