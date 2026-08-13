@@ -33,3 +33,25 @@ export function trackEvent(input: TrackEventInput): void {
       /* fire-and-forget */
     })
 }
+
+export interface VehicleCount {
+  vehicleId: number
+  count: number
+}
+
+export interface PairCount {
+  vehicleIds: [number, number]
+  count: number
+}
+
+export interface DashboardResult {
+  topViewed: VehicleCount[]
+  topCompared: VehicleCount[]
+  topPairs: PairCount[]
+  leadsByVehicle: VehicleCount[]
+}
+
+// admin — requiere sesión
+export function getDashboard(): Promise<DashboardResult> {
+  return api.get<DashboardResult>('/analytics/dashboard')
+}
