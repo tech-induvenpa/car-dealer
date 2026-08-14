@@ -1,29 +1,46 @@
-import { useEffect, useState } from 'react'
-import { Button } from '@heroui/react'
-
-type HealthResponse = { status: string; db: string }
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import { ComparisonProvider } from './context/ComparisonContext'
+import { PublicLayout } from './components/layout/PublicLayout'
+import { AdminLayout } from './components/admin/AdminLayout'
+import { RequireAuth } from './components/admin/RequireAuth'
+import { Catalog } from './pages/public/Catalog'
+import { Quiz } from './pages/public/Quiz'
+import { VehicleDetail } from './pages/public/VehicleDetail'
+import { Comparison } from './pages/public/Comparison'
+import { AdminLogin } from './pages/admin/Login'
+import { AdminDashboard } from './pages/admin/Dashboard'
+import { AdminVehicleTable } from './pages/admin/VehicleTable'
+import { VehicleFormPage } from './pages/admin/VehicleForm'
+import { AdminLeads } from './pages/admin/Leads'
 
 function App() {
-  const [health, setHealth] = useState<HealthResponse | 'error' | null>(null)
-
-  useEffect(() => {
-    fetch('http://localhost:3000/health')
-      .then((res) => res.json())
-      .then(setHealth)
-      .catch(() => setHealth('error'))
-  }, [])
-
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <h1 className="text-2xl font-semibold">Car Dealer</h1>
-      <p>
-        Backend:{' '}
-        {health === null && 'cargando...'}
-        {health === 'error' && 'no responde'}
-        {health && health !== 'error' && `${health.status} (db: ${health.db})`}
-      </p>
-      <Button color="primary">HeroUI conectado</Button>
-    </main>
+    <AuthProvider>
+      <ComparisonProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<Catalog />} />
+              <Route path="/quiz" element={<Quiz />} />
+              <Route path="/vehiculos/:id" element={<VehicleDetail />} />
+              <Route path="/comparar" element={<Comparison />} />
+            </Route>
+
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route element={<RequireAuth />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/vehiculos" element={<AdminVehicleTable />} />
+                <Route path="/admin/vehiculos/nuevo" element={<VehicleFormPage />} />
+                <Route path="/admin/vehiculos/:id/editar" element={<VehicleFormPage />} />
+                <Route path="/admin/leads" element={<AdminLeads />} />
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ComparisonProvider>
+    </AuthProvider>
   )
 }
 
