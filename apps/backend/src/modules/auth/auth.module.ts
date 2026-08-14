@@ -12,9 +12,12 @@ import { AdminUserRepositoryAdapter } from './infrastructure/persistence/admin-u
   imports: [
     CqrsModule,
     PassportModule,
+    // ponytail: 30 días sin refresh token, ver ADR-0009 — evita perder
+    // trabajo a mitad de un formulario largo sin la complejidad de un
+    // refresh token con estado.
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '24h' },
+      signOptions: { expiresIn: '30d' },
     }),
   ],
   controllers: [AuthController],

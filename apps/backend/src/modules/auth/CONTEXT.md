@@ -9,7 +9,7 @@ Cuenta de un solo rol para el personal interno del holding que puede entrar al a
 _Avoid_: usuario (ambiguo con los visitantes públicos, que no son "usuarios" en el MVP), cliente.
 
 **Sesión admin**:
-El JWT emitido al hacer login, válido ~24h, sin refresh token — volver a loguearse cada día es aceptable para este MVP.
+El JWT emitido al hacer login, válido 30 días, sin refresh token — una ventana larga y fija en vez de renovación activa (ver ADR-0009). Volver a loguearse cada mes es aceptable para este MVP.
 _Avoid_: token a secas (vale informalmente, pero "Sesión admin" es el concepto de dominio; el JWT es su representación técnica).
 
 ## Relationships

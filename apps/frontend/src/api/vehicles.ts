@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { ComparisonResult, Vehicle, VehicleFilters } from '../types/vehicle'
+import type { ComparisonResult, Vehicle, VehicleFilters, VehicleFormInput } from '../types/vehicle'
 
 export function listVehicles(filters: VehicleFilters = {}): Promise<Vehicle[]> {
   const params = new URLSearchParams()
@@ -18,4 +18,21 @@ export function getVehicle(id: number): Promise<Vehicle> {
 
 export function compareVehicles(ids: number[]): Promise<ComparisonResult> {
   return api.get<ComparisonResult>(`/vehicles/compare?ids=${ids.join(',')}`)
+}
+
+// admin — todos requieren sesión (Authorization header lo agrega api/client.ts)
+export function createVehicle(input: VehicleFormInput): Promise<{ id: number }> {
+  return api.post<{ id: number }>('/vehicles', input)
+}
+
+export function updateVehicle(id: number, input: VehicleFormInput): Promise<void> {
+  return api.patch<void>(`/vehicles/${id}`, input)
+}
+
+export function archiveVehicle(id: number): Promise<void> {
+  return api.post<void>(`/vehicles/${id}/archive`)
+}
+
+export function publishVehicle(id: number): Promise<void> {
+  return api.post<void>(`/vehicles/${id}/publish`)
 }
