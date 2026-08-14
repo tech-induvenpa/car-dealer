@@ -121,5 +121,20 @@ model Lead {
   updatedAt  DateTime   @updatedAt
 }
 
-// Resto de modelos por bounded context (AnalyticsEvent) se agregan
-// a medida que se construye cada módulo — ver apps/backend/src/modules/*/CONTEXT.md
+enum AnalyticsEventType {
+  VEHICLE_VIEWED
+  VEHICLE_ADDED_TO_COMPARISON
+  COMPARISON_PERFORMED
+  QUIZ_COMPLETED
+  LEAD_SUBMITTED
+}
+
+model AnalyticsEvent {
+  id         Int                @id @default(autoincrement())
+  type       AnalyticsEventType
+  sessionId  String?
+  vehicleId  Int?
+  vehicleIds Int[]
+  metadata   Json?
+  createdAt  DateTime           @default(now())
+}

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthController } from './health.controller';
+import { AnalyticsModule } from './modules/analytics/infrastructure/analytics.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { LeadsModule } from './modules/leads/infrastructure/leads.module';
 import { VehiclesModule } from './modules/vehicles/infrastructure/vehicles.module';
@@ -13,6 +14,7 @@ import { VehiclesModule } from './modules/vehicles/infrastructure/vehicles.modul
     AuthModule,
     VehiclesModule,
     LeadsModule,
+    AnalyticsModule,
   ],
   controllers: [HealthController],
 })
