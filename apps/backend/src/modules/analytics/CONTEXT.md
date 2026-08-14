@@ -9,7 +9,7 @@ Un hecho puntual de comportamiento anónimo (vehículo visto, agregado a compara
 _Avoid_: log, registro (demasiado genéricos).
 
 **Sesión (anónima)**:
-Un ID aleatorio generado en el navegador y persistido ahí, usado para correlacionar los Eventos de un visitante sin identificarlo personalmente.
+Un ID aleatorio generado en el navegador y persistido ahí, usado para correlacionar los Eventos de un visitante sin identificarlo personalmente. Ausente en el Evento de Lead enviado (se crea del lado del servidor a partir de `LeadSubmittedEvent`, que no la lleva — ver ADR-0008).
 _Avoid_: usuario (no hay login en el lado público), visitante (vale en prosa, no como nombre de campo).
 
 **Par comparado**:
@@ -32,4 +32,4 @@ _Avoid_: reporte (sugiere algo exportado/programado; esto es en vivo).
 
 ## Flagged ambiguities
 
-- Ninguna todavía — este contexto es nuevo, revisar cuando se implemente.
+- Se discutió si el Evento de Lead enviado debía llevar Sesión (para correlacionar el Lead con la navegación previa) — resuelto: no, Leads no va a empezar a cargar `sessionId` solo para servirle a Analytics (ver ADR-0008). Revisar si en el futuro se necesita esa correlación.
