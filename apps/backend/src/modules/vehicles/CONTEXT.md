@@ -47,7 +47,7 @@ _Avoid_: mejor valor.
 ## Relationships
 
 - Un **Vehículo** tiene exactamente una **Ficha técnica** (embebida, no es un aggregate separado).
-- Un **Vehículo** pertenece a una **Marca** (Toyota/Kia/Changan) y una **Categoría**.
+- Un **Vehículo** pertenece a una **Marca** (enum fijo con 54 valores conocidos del mercado venezolano — hoy el holding solo comercializa Toyota/Kia/Changan, ver ADR-0010) y una **Categoría**.
 - **Leads** y **Eventos de Analytics** referencian a un **Vehículo** solo por ID — Catalog nunca depende de ellos.
 - Una **Comparación** agrupa entre 2 y 4 **Vehículos** y puede producir un **Aviso de categoría dispar** y un **Ganador de comparación** por campo.
 
