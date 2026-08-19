@@ -8,7 +8,15 @@ import {
   type VehicleFormInput,
 } from '../../types/vehicle'
 
-const BRANDS = ['TOYOTA', 'KIA', 'CHANGAN'] as const
+const BRANDS = [
+  'TOYOTA', 'KIA', 'CHANGAN', 'CHEVROLET', 'FORD', 'HONDA', 'HYUNDAI', 'MITSUBISHI',
+  'JEEP', 'CHRYSLER', 'DODGE', 'RAM', 'BUICK', 'CADILLAC', 'LINCOLN', 'MERCURY',
+  'PONTIAC', 'HUMMER', 'VOLKSWAGEN', 'AUDI', 'BMW', 'MERCEDES_BENZ', 'PORSCHE', 'MINI',
+  'FIAT', 'ALFA_ROMEO', 'RENAULT', 'PEUGEOT', 'CITROEN', 'SEAT', 'SKODA',
+  'ASTON_MARTIN', 'LAND_ROVER', 'CHERY', 'BYD', 'GEELY', 'GREAT_WALL', 'JAC', 'JMC',
+  'LIFAN', 'WULING', 'ZHONGXING', 'ZOTYE', 'HAFEI', 'CHANA', 'CHANGHE', 'VENIRAUTO',
+  'VIT', 'DONGFENG', 'FORTHING', 'FOTON', 'ISUZU', 'IVECO', 'MACK',
+] as const
 const CATEGORIES = ['SUV', 'SEDAN', 'PICKUP', 'HATCHBACK', 'COMPACTO'] as const
 const FUEL_TYPES = ['GASOLINA', 'DIESEL', 'HIBRIDO', 'ELECTRICO'] as const
 const TRANSMISSION_TYPES = ['MANUAL', 'AUTOMATICA', 'CVT', 'DCT'] as const
