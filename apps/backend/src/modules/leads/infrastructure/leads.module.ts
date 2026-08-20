@@ -17,5 +17,9 @@ import { LeadRepositoryAdapter } from './persistence/lead.repository.adapter';
     ListLeadsHandler,
     { provide: LEAD_REPOSITORY, useClass: LeadRepositoryAdapter },
   ],
+  // exporta el puerto para que Agent (CEB-47) cree Leads directamente al
+  // detectar contacto real — mismo patrón que Vehicles/Profile exportan
+  // sus repositorios para Agent (CEB-42/CEB-44).
+  exports: [LEAD_REPOSITORY],
 })
 export class LeadsModule {}

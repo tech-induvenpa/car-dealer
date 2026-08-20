@@ -28,7 +28,7 @@ function validRow(overrides: Record<string, unknown> = {}) {
 describe('ImportVehiclesHandler', () => {
   it('persists every row of an all-valid batch and reports no errors', async () => {
     const save = jest.fn().mockResolvedValue(1);
-    const handler = new ImportVehiclesHandler({ save, findById: jest.fn() });
+    const handler = new ImportVehiclesHandler({ save, findById: jest.fn(), findAllPublished: jest.fn() });
 
     const result = await handler.execute(
       new ImportVehiclesCommand([validRow(), validRow({ model: 'CS35 Plus 2' })]),
@@ -41,7 +41,7 @@ describe('ImportVehiclesHandler', () => {
 
   it('persists valid rows and reports invalid ones without aborting the batch', async () => {
     const save = jest.fn().mockResolvedValue(1);
-    const handler = new ImportVehiclesHandler({ save, findById: jest.fn() });
+    const handler = new ImportVehiclesHandler({ save, findById: jest.fn(), findAllPublished: jest.fn() });
 
     const result = await handler.execute(
       new ImportVehiclesCommand([validRow(), validRow({ price: 0 }), validRow({ model: 'ok' })]),
@@ -55,7 +55,7 @@ describe('ImportVehiclesHandler', () => {
 
   it('reports an out-of-range year as a row error without persisting it', async () => {
     const save = jest.fn().mockResolvedValue(1);
-    const handler = new ImportVehiclesHandler({ save, findById: jest.fn() });
+    const handler = new ImportVehiclesHandler({ save, findById: jest.fn(), findAllPublished: jest.fn() });
 
     const result = await handler.execute(new ImportVehiclesCommand([validRow({ year: 2099 })]));
 

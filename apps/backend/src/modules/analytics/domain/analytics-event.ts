@@ -76,6 +76,15 @@ export class AnalyticsEvent {
           throw new InconsistentAnalyticsEventException(props.type, 'vehicleIds');
         }
         break;
+      case AnalyticsEventType.NEED_CAPTURED:
+      case AnalyticsEventType.MOTIVATION_CAPTURED:
+      case AnalyticsEventType.OBJECTION_CAPTURED:
+      case AnalyticsEventType.BUDGET_CAPTURED:
+      case AnalyticsEventType.FUNNEL_STAGE_REACHED:
+        if (props.metadata == null) {
+          throw new InconsistentAnalyticsEventException(props.type, 'metadata');
+        }
+        break;
     }
   }
 

@@ -21,6 +21,7 @@ _Avoid_: etapa, pipeline (es el concepto técnico detrás, "Estado" es el térmi
 - Un **Lead** referencia uno o más **Vehículo** (por ID, desde Catalog) — en la práctica entre 1 y 4, siguiendo la regla del comparador, aunque el dominio solo exige al menos 1.
 - Enviar un **Lead** dispara un `LeadSubmittedEvent`, consumido por Analytics — Leads no depende de Analytics ni sabe que existe.
 - Un **Lead** tiene exactamente un **Estado del Lead**, que solo el Administrador de catálogo cambia manualmente.
+- Un **Lead** puede referenciar opcionalmente un **Perfil** (por `profileId`, nullable, ver `profile/CONTEXT.md`) — presente solo si el Lead se originó desde el Agente conversacional; un Lead del Wizard actual queda con `profileId = null`. Es una referencia por ID igual que con Vehículo, no reabre la decisión de no agregar campos demográficos al Lead (ver Flagged ambiguities).
 
 ## Example dialogue
 
@@ -30,3 +31,4 @@ _Avoid_: etapa, pipeline (es el concepto técnico detrás, "Estado" es el térmi
 ## Flagged ambiguities
 
 - Se discutió (y se descartó para el MVP) agregar más campos demográficos al Lead — resuelto: solo nombre, apellido, teléfono, para minimizar fricción. Revisar con datos reales antes de sumar campos.
+- Esa decisión no aplica a `profileId`: es un puntero al contexto Perfil de Cliente, no un campo demográfico que el comprador tenga que llenar — no agrega fricción al formulario de Lead.
