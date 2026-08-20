@@ -168,8 +168,44 @@ model Lead {
   phone      String
   vehicleIds Int[]
   status     LeadStatus @default(NUEVO)
+  // null cuando el Lead vino del Wizard actual; solo se puebla cuando el
+  // Agente conversacional lo crea (ver leads/CONTEXT.md).
+  profileId  Int?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
+}
+
+// needs/motivations/objections son Json (array de {category, detail}) en vez
+// de tablas relacionadas — ponytail: MVP, sin queries que filtren por
+// categoría todavía; si Analytics necesita agregarlas de verdad, se revisa.
+model Profile {
+  id          Int      @id @default(autoincrement())
+  sessionId   String   @unique
+  needs       Json     @default("[]")
+  motivations Json     @default("[]")
+  objections  Json     @default("[]")
+  budgetMin   Int?
+  budgetMax   Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum ConversationStatus {
+  ACTIVA
+  ABANDONADA
+  COMPLETADA
+}
+
+// turns es Json (array de {buyerMessage, agentReply}) — misma razón que
+// needs/motivations/objections en Profile: MVP, sin necesidad de tabla
+// relacionada todavía.
+model Conversation {
+  id        Int                @id @default(autoincrement())
+  sessionId String             @unique
+  status    ConversationStatus @default(ACTIVA)
+  turns     Json               @default("[]")
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 }
 
 enum AnalyticsEventType {
@@ -178,6 +214,11 @@ enum AnalyticsEventType {
   COMPARISON_PERFORMED
   QUIZ_COMPLETED
   LEAD_SUBMITTED
+  NEED_CAPTURED
+  MOTIVATION_CAPTURED
+  OBJECTION_CAPTURED
+  BUDGET_CAPTURED
+  FUNNEL_STAGE_REACHED
 }
 
 model AnalyticsEvent {

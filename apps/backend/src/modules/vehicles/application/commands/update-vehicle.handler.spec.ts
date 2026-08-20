@@ -53,6 +53,7 @@ describe('UpdateVehicleHandler', () => {
     const repository: jest.Mocked<VehicleRepository> = {
       findById: jest.fn().mockResolvedValue(null),
       save: jest.fn(),
+      findAllPublished: jest.fn(),
     };
     const handler = new UpdateVehicleHandler(repository);
 
@@ -72,6 +73,7 @@ describe('UpdateVehicleHandler', () => {
     const repository: jest.Mocked<VehicleRepository> = {
       findById: jest.fn().mockResolvedValue(existing),
       save: jest.fn().mockResolvedValue(1),
+      findAllPublished: jest.fn(),
     };
     const handler = new UpdateVehicleHandler(repository);
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { trackEvent } from '../../api/analytics'
+import { captureWizardCompletion } from '../../api/profile'
 
 interface Question {
   key: 'uso' | 'presupuesto'
@@ -45,6 +46,8 @@ export function Quiz() {
     }
 
     trackEvent({ type: 'QUIZ_COMPLETED', metadata: next })
+    // aditivo, no reemplaza el comportamiento anterior — ver CEB-41.
+    captureWizardCompletion(next.uso, next.presupuesto)
     const params = new URLSearchParams()
     if (next.uso) params.set('category', next.uso)
     if (next.presupuesto) params.set('maxPrice', next.presupuesto)

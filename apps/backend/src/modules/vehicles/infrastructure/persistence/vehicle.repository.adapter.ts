@@ -25,4 +25,12 @@ export class VehicleRepositoryAdapter implements VehicleRepository {
     const row = await this.prisma.vehicle.findUnique({ where: { id } });
     return row ? VehicleMapper.toDomain(row) : null;
   }
+
+  async findAllPublished(): Promise<Vehicle[]> {
+    const rows = await this.prisma.vehicle.findMany({
+      where: { isPublished: true },
+      orderBy: { id: 'asc' },
+    });
+    return rows.map(VehicleMapper.toDomain);
+  }
 }

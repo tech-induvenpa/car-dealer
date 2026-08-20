@@ -4,4 +4,12 @@ export enum AnalyticsEventType {
   COMPARISON_PERFORMED = 'COMPARISON_PERFORMED',
   QUIZ_COMPLETED = 'QUIZ_COMPLETED',
   LEAD_SUBMITTED = 'LEAD_SUBMITTED',
+  // CEB-45 — reactivos desde profile/ y agent/, mismo patrón que
+  // LEAD_SUBMITTED (ADR-0004): sessionId queda null a propósito, esos
+  // aggregates no cargan ese dato solo para servirle a Analytics.
+  NEED_CAPTURED = 'NEED_CAPTURED',
+  MOTIVATION_CAPTURED = 'MOTIVATION_CAPTURED',
+  OBJECTION_CAPTURED = 'OBJECTION_CAPTURED',
+  BUDGET_CAPTURED = 'BUDGET_CAPTURED',
+  FUNNEL_STAGE_REACHED = 'FUNNEL_STAGE_REACHED',
 }
