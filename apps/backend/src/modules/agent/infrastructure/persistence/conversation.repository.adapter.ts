@@ -23,8 +23,8 @@ export class ConversationRepositoryAdapter implements ConversationRepository {
     return row ? ConversationMapper.toDomain(row) : null;
   }
 
-  async findBySessionId(sessionId: string): Promise<Conversation | null> {
-    const row = await this.prisma.conversation.findUnique({ where: { sessionId } });
+  async findActiveBySessionId(sessionId: string): Promise<Conversation | null> {
+    const row = await this.prisma.conversation.findFirst({ where: { sessionId, status: 'ACTIVA' } });
     return row ? ConversationMapper.toDomain(row) : null;
   }
 }

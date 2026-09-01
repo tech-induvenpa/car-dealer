@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { Button, Chip, Spinner, buttonVariants } from '@heroui/react'
 import { compareVehicles } from '../../api/vehicles'
 import { trackEvent } from '../../api/analytics'
 import type { ComparisonResult, Vehicle } from '../../types/vehicle'
@@ -68,10 +69,10 @@ export function Comparison() {
   if (ids.length < 2) {
     return (
       <div className="py-12 text-center">
-        <p className="mb-4 text-neutral-500">
+        <p className="mb-4 text-muted">
           Elegí al menos 2 vehículos desde el catálogo para compararlos.
         </p>
-        <Link to="/" className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
+        <Link to="/" className={buttonVariants()}>
           Ir al catálogo
         </Link>
       </div>
@@ -79,17 +80,21 @@ export function Comparison() {
   }
 
   if (error) {
-    return <p className="text-red-600">No pudimos armar la comparación.</p>
+    return <p className="text-danger">No pudimos armar la comparación.</p>
   }
 
   if (!result) {
-    return <p className="py-12 text-center text-neutral-500">Cargando...</p>
+    return (
+      <div className="flex items-center justify-center gap-2 py-12 text-muted">
+        <Spinner /> Cargando...
+      </div>
+    )
   }
 
   return (
     <div className="flex flex-col gap-6">
       {result.categoryMismatch ? (
-        <div className="rounded-lg bg-amber-50 p-4 text-amber-700">
+        <div className="rounded-2xl bg-warning-soft p-4 text-warning-soft-foreground">
           Estás comparando vehículos de categorías bastante distintas — la comparación puede no
           ser del todo justa.
         </div>
@@ -110,23 +115,23 @@ export function Comparison() {
                   <p className="font-medium leading-tight">
                     {v.brand} {v.model} {v.trim}
                   </p>
-                  <span className="mt-1 inline-block rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+                  <Chip size="sm" className="mt-1">
                     {v.category}
-                  </span>
+                  </Chip>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {ROWS.map((row) => (
-              <tr key={row.field} className="border-t border-neutral-100">
-                <td className="p-3 text-sm text-neutral-500">{row.label}</td>
+              <tr key={row.field} className="border-t border-separator">
+                <td className="p-3 text-sm text-muted">{row.label}</td>
                 {result.vehicles.map((v) => {
                   const isWinner = result.winners[row.field]?.includes(v.id)
                   return (
                     <td
                       key={v.id}
-                      className={`p-3 text-sm ${isWinner ? 'font-semibold text-green-600' : ''}`}
+                      className={`p-3 text-sm text-foreground ${isWinner ? 'font-semibold text-success' : ''}`}
                     >
                       {row.format(v)}
                       {isWinner ? ' ★' : ''}
@@ -141,13 +146,9 @@ export function Comparison() {
 
       <LeadForm vehicleIds={result.vehicles.map((v) => v.id)} />
 
-      <button
-        type="button"
-        onClick={clear}
-        className="self-start text-sm text-neutral-500 underline hover:text-neutral-900"
-      >
+      <Button variant="ghost" size="sm" className="self-start" onPress={clear}>
         Limpiar comparación
-      </button>
+      </Button>
     </div>
   )
 }

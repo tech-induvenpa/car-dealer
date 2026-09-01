@@ -12,4 +12,9 @@ export enum AnalyticsEventType {
   OBJECTION_CAPTURED = 'OBJECTION_CAPTURED',
   BUDGET_CAPTURED = 'BUDGET_CAPTURED',
   FUNNEL_STAGE_REACHED = 'FUNNEL_STAGE_REACHED',
+  // CEB-36-UI-06: directo desde el frontend (como QUIZ_COMPLETED), no
+  // reactivo — mide si el comprador cancela por no querer perder la
+  // Conversación anterior (señal barata de interés en historial, ver
+  // memoria de proyecto sobre la idea de monetización).
+  NEW_CONVERSATION_WARNING_DECIDED = 'NEW_CONVERSATION_WARNING_DECIDED',
 }

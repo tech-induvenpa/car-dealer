@@ -74,9 +74,9 @@ function fakeEventBus(): { bus: EventBus; published: () => unknown[] } {
 
 function conversationRepository(): jest.Mocked<ConversationRepository> {
   return {
-    findBySessionId: jest.fn().mockResolvedValue(null),
+    findActiveBySessionId: jest.fn().mockResolvedValue(null),
     save: jest.fn().mockResolvedValue(1),
-    findById: jest.fn(),
+    findById: jest.fn().mockResolvedValue(null),
   };
 }
 
@@ -128,8 +128,16 @@ function handlerWith(overrides: {
 }
 
 describe('SendMessageHandler', () => {
-  it('creates a Conversation for a new session, calls LlmPort with candidate vehicles, and persists the turn', async () => {
-    const vehicle = publishedVehicle(1);
+  it('creates a Conversation for a new session, calls LlmPort with candidate vehicles (incl. full specs), and persists the turn', async () => {
+    // ponytail: fuelEconomyNormalizedKmPerL con un valor real a propósito —
+    // esto es exactamente lo que faltaba antes de este fix (el LLM no
+    // recibía specs, solo brand/model/trim/year/category/price).
+    const vehicle = Vehicle.reconstruct({
+      ...vehicleProps(),
+      id: 1,
+      fuelEconomyNormalizedKmPerL: 15.5,
+      isPublished: true,
+    });
     let contextSeen: LlmReplyContext | undefined;
     const llm: jest.Mocked<LlmPort> = {
       reply: jest.fn().mockImplementation(async (context: LlmReplyContext) => {
@@ -142,12 +150,16 @@ describe('SendMessageHandler', () => {
     const result = await handler.execute(new SendMessageCommand('session-abc', 'hola'));
 
     expect(contextSeen?.candidateVehicles).toEqual([
-      expect.objectContaining({ vehicleId: 1, model: 'CS35 Plus' }),
+      expect.objectContaining({
+        vehicleId: 1,
+        model: 'CS35 Plus',
+        specs: expect.objectContaining({ fuelEconomyNormalizedKmPerL: 15.5, hasAbs: true }),
+      }),
     ]);
-    expect(result).toEqual({ conversationId: 1, reply: 'eco: hola' });
+    expect(result).toEqual({ conversationId: 1, reply: 'eco: hola', referencedVehicleIds: [] });
   });
 
-  it('reuses an existing ACTIVA Conversation and appends the new turn to prior history', async () => {
+  it('continues the given conversationId and appends the new turn to its prior history', async () => {
     const existing = Conversation.reconstruct({
       id: 5,
       sessionId: 'session-existing',
@@ -155,9 +167,9 @@ describe('SendMessageHandler', () => {
       turns: [{ buyerMessage: 'hola', agentReply: 'eco: hola', intentSignal: null, referencedVehicleIds: [] }],
     });
     const conversations: jest.Mocked<ConversationRepository> = {
-      findBySessionId: jest.fn().mockResolvedValue(existing),
+      findActiveBySessionId: jest.fn(),
       save: jest.fn().mockResolvedValue(5),
-      findById: jest.fn(),
+      findById: jest.fn().mockResolvedValue(existing),
     };
     let contextSeen: LlmReplyContext | undefined;
     const llm: jest.Mocked<LlmPort> = {
@@ -168,11 +180,40 @@ describe('SendMessageHandler', () => {
     };
     const handler = handlerWith({ conversations, llm });
 
-    const result = await handler.execute(new SendMessageCommand('session-existing', 'segundo mensaje'));
+    const result = await handler.execute(new SendMessageCommand('session-existing', 'segundo mensaje', 5));
 
+    expect(conversations.findActiveBySessionId).not.toHaveBeenCalled();
     expect(conversations.save).toHaveBeenCalledTimes(1);
     expect(contextSeen?.turns).toHaveLength(1);
     expect(result.conversationId).toBe(5);
+  });
+
+  it('omitting conversationId always abandons any existing ACTIVA Conversation and starts a new one', async () => {
+    const existing = Conversation.reconstruct({
+      id: 5,
+      sessionId: 'session-existing',
+      status: ConversationStatus.ACTIVA,
+      turns: [{ buyerMessage: 'hola', agentReply: 'eco: hola', intentSignal: null, referencedVehicleIds: [] }],
+    });
+    const conversations: jest.Mocked<ConversationRepository> = {
+      findActiveBySessionId: jest.fn().mockResolvedValue(existing),
+      save: jest.fn().mockResolvedValue(6),
+      findById: jest.fn(),
+    };
+    let contextSeen: LlmReplyContext | undefined;
+    const llm: jest.Mocked<LlmPort> = {
+      reply: jest.fn().mockImplementation(async (context: LlmReplyContext) => {
+        contextSeen = context;
+        return { message: 'eco: nuevo' };
+      }),
+    };
+    const handler = handlerWith({ conversations, llm });
+
+    const result = await handler.execute(new SendMessageCommand('session-existing', 'nuevo mensaje'));
+
+    expect(existing.status).toBe(ConversationStatus.ABANDONADA);
+    expect(contextSeen?.turns).toHaveLength(0); // conversación nueva, sin historial de la abandonada
+    expect(result.conversationId).toBe(6);
   });
 
   // --- INV-6: nunca sale del alcance / resiliente a prompt injection ---
@@ -229,6 +270,8 @@ describe('SendMessageHandler', () => {
     const result = await handler.execute(new SendMessageCommand('session-1', 'recomiéndame algo'));
 
     expect(result.reply).not.toContain('CS35 Plus');
+    // el vehicleId inválido no se contamina hacia el frontend ni el Turno.
+    expect(result.referencedVehicleIds).toEqual([]);
   });
 
   it('passes the LLM message through unchanged when every referenced vehicle is real and published', async () => {
@@ -242,6 +285,21 @@ describe('SendMessageHandler', () => {
     const result = await handler.execute(new SendMessageCommand('session-1', 'recomiéndame algo'));
 
     expect(result.reply).toBe('Te recomiendo el CS35 Plus, es un excelente SUV familiar.');
+    expect(result.referencedVehicleIds).toEqual([1]);
+  });
+
+  it('does not record the invalid referencedVehicleIds on the Turn when grounding fails', async () => {
+    const llm = llmReturning({ message: 'Te recomiendo el vehículo 999.', referencedVehicleIds: [999] });
+    const conversations = conversationRepository();
+    const handler = handlerWith({ conversations, llm });
+
+    await handler.execute(new SendMessageCommand('session-1', 'recomiéndame algo'));
+
+    // save() se llama primero al crear la Conversación vacía (dentro de
+    // resolveConversation) y otra vez con el turno ya grabado — nos
+    // importa esta última.
+    const saved = conversations.save.mock.calls[conversations.save.mock.calls.length - 1][0] as Conversation;
+    expect(saved.turns[0].referencedVehicleIds).toEqual([]);
   });
 
   // --- CEB-44: enriquecimiento de Profile desde el Agente ---
@@ -336,9 +394,9 @@ describe('SendMessageHandler', () => {
     it('creates a Lead with profileId when contact is provided and the Profile already qualifies (INV-4, INV-5)', async () => {
       const leads = leadRepository();
       const conversations: jest.Mocked<ConversationRepository> = {
-        findBySessionId: jest.fn().mockResolvedValue(conversationWithReferencedVehicle()),
+        findActiveBySessionId: jest.fn(),
         save: jest.fn().mockResolvedValue(10),
-        findById: jest.fn(),
+        findById: jest.fn().mockResolvedValue(conversationWithReferencedVehicle()),
       };
       const llm = llmReturning({
         message: 'Perfecto, ya te anoté.',
@@ -351,13 +409,41 @@ describe('SendMessageHandler', () => {
         llm,
       });
 
-      await handler.execute(new SendMessageCommand('session-lead', 'mi nombre es Juan Pérez, +58 412 1234567'));
+      await handler.execute(
+        new SendMessageCommand('session-lead', 'mi nombre es Juan Pérez, +58 412 1234567', 10),
+      );
 
       expect(leads.save).toHaveBeenCalledTimes(1);
       const saved = leads.save.mock.calls[0][0] as Lead;
       expect(saved.firstName).toBe('Juan');
       expect(saved.profileId).toBe(42);
       expect(saved.vehicleIds).toEqual([1]);
+    });
+
+    it('marks the Conversation COMPLETADA (not ABANDONADA) once a Lead is created from it', async () => {
+      const leads = leadRepository();
+      const conversation = conversationWithReferencedVehicle();
+      const conversations: jest.Mocked<ConversationRepository> = {
+        findActiveBySessionId: jest.fn(),
+        save: jest.fn().mockResolvedValue(10),
+        findById: jest.fn().mockResolvedValue(conversation),
+      };
+      const llm = llmReturning({
+        message: 'Perfecto, ya te anoté.',
+        extractedContact: { firstName: 'Juan', lastName: 'Pérez', phone: '+58 412 1234567' },
+      });
+      const handler = handlerWith({
+        conversations,
+        profiles: profileRepository(qualifiedProfile()),
+        leads,
+        llm,
+      });
+
+      await handler.execute(
+        new SendMessageCommand('session-lead', 'mi nombre es Juan Pérez, +58 412 1234567', 10),
+      );
+
+      expect(conversation.status).toBe(ConversationStatus.COMPLETADA);
     });
 
     it('does NOT create a Lead when contact is provided but the Profile is not yet qualified (INV-4)', async () => {
@@ -377,17 +463,16 @@ describe('SendMessageHandler', () => {
 
     it('does NOT create a Lead when qualified with contact but no vehicle was ever referenced in the Conversation', async () => {
       const leads = leadRepository();
+      const noVehicleConversation = Conversation.reconstruct({
+        id: 11,
+        sessionId: 'session-no-vehicle',
+        status: ConversationStatus.ACTIVA,
+        turns: [],
+      });
       const conversations: jest.Mocked<ConversationRepository> = {
-        findBySessionId: jest.fn().mockResolvedValue(
-          Conversation.reconstruct({
-            id: 11,
-            sessionId: 'session-no-vehicle',
-            status: ConversationStatus.ACTIVA,
-            turns: [],
-          }),
-        ),
+        findActiveBySessionId: jest.fn(),
         save: jest.fn().mockResolvedValue(11),
-        findById: jest.fn(),
+        findById: jest.fn().mockResolvedValue(noVehicleConversation),
       };
       const llm = llmReturning({
         message: 'Perfecto.',
@@ -400,7 +485,7 @@ describe('SendMessageHandler', () => {
         llm,
       });
 
-      await handler.execute(new SendMessageCommand('session-no-vehicle', 'soy Juan, +58 412 1234567'));
+      await handler.execute(new SendMessageCommand('session-no-vehicle', 'soy Juan, +58 412 1234567', 11));
 
       expect(leads.save).not.toHaveBeenCalled();
     });
@@ -427,5 +512,92 @@ describe('SendMessageHandler', () => {
     expect(published()).toHaveLength(1);
     expect(published()[0]).toBeInstanceOf(FunnelStageReachedEvent);
     expect((published()[0] as FunnelStageReachedEvent).stage).toBe('CALIFICACION_TEMPRANA');
+  });
+
+  // --- el LLM recibe la Etapa y el resumen del Perfil ANTES de este turno,
+  // para poder preguntar acorde a lo que falta (pedido del usuario) ---
+  describe('currentStage / profileSummary en el contexto del LLM', () => {
+    it('passes currentStage ENTRADA and an empty profileSummary on the very first message', async () => {
+      let contextSeen: LlmReplyContext | undefined;
+      const llm: jest.Mocked<LlmPort> = {
+        reply: jest.fn().mockImplementation(async (context: LlmReplyContext) => {
+          contextSeen = context;
+          return { message: 'hola' };
+        }),
+      };
+      await handlerWith({ llm }).execute(new SendMessageCommand('session-new', 'hola'));
+
+      expect(contextSeen?.currentStage).toBe('ENTRADA');
+      expect(contextSeen?.profileSummary).toEqual({
+        needs: [],
+        motivations: [],
+        objections: [],
+        budgetRange: null,
+      });
+    });
+
+    it('passes currentStage DESCUBRIMIENTO and the existing facts once the Profile already qualifies', async () => {
+      const profile = Profile.reconstruct({
+        id: 9,
+        sessionId: 'session-qualified',
+        needs: [{ category: 'SUV', detail: 'familia' }],
+        motivations: [],
+        objections: [],
+        budgetRange: null,
+      });
+      profile.captureBudget(0, 20000);
+
+      const existingConversation = Conversation.reconstruct({
+        id: 4,
+        sessionId: 'session-qualified',
+        status: ConversationStatus.ACTIVA,
+        turns: [{ buyerMessage: 'hola', agentReply: 'hola!', intentSignal: null, referencedVehicleIds: [] }],
+      });
+      const conversations: jest.Mocked<ConversationRepository> = {
+        findActiveBySessionId: jest.fn(),
+        save: jest.fn().mockResolvedValue(4),
+        findById: jest.fn().mockResolvedValue(existingConversation),
+      };
+
+      let contextSeen: LlmReplyContext | undefined;
+      const llm: jest.Mocked<LlmPort> = {
+        reply: jest.fn().mockImplementation(async (context: LlmReplyContext) => {
+          contextSeen = context;
+          return { message: 'contame más' };
+        }),
+      };
+      await handlerWith({ conversations, profiles: profileRepository(profile), llm }).execute(
+        new SendMessageCommand('session-qualified', 'y de consumo?', 4),
+      );
+
+      expect(contextSeen?.currentStage).toBe('DESCUBRIMIENTO');
+      expect(contextSeen?.profileSummary.needs).toEqual([{ category: 'SUV', detail: 'familia' }]);
+      expect(contextSeen?.profileSummary.budgetRange).toEqual({ min: 0, max: 20000 });
+    });
+
+    it('uses the state BEFORE this turn — facts extracted from the current reply do not affect currentStage/profileSummary already sent to the LLM', async () => {
+      let contextSeen: LlmReplyContext | undefined;
+      const llm: jest.Mocked<LlmPort> = {
+        reply: jest.fn().mockImplementation(async (context: LlmReplyContext) => {
+          contextSeen = context;
+          // este mismo turno revela necesidad+presupuesto — no debería
+          // "verse a sí mismo" en profileSummary, porque profileSummary
+          // se arma ANTES de llamar al LLM.
+          return {
+            message: 'perfecto',
+            extractedNeed: { category: 'PICKUP', detail: 'trabajo' },
+            extractedBudget: { min: 0, max: 35000 },
+          };
+        }),
+      };
+      await handlerWith({ llm }).execute(new SendMessageCommand('session-fresh', 'busco pickup, hasta 35000'));
+
+      expect(contextSeen?.profileSummary).toEqual({
+        needs: [],
+        motivations: [],
+        objections: [],
+        budgetRange: null,
+      });
+    });
   });
 });

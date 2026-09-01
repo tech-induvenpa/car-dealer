@@ -76,6 +76,7 @@ export class AnalyticsEvent {
           throw new InconsistentAnalyticsEventException(props.type, 'vehicleIds');
         }
         break;
+      case AnalyticsEventType.NEW_CONVERSATION_WARNING_DECIDED:
       case AnalyticsEventType.NEED_CAPTURED:
       case AnalyticsEventType.MOTIVATION_CAPTURED:
       case AnalyticsEventType.OBJECTION_CAPTURED:

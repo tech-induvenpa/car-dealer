@@ -199,13 +199,18 @@ enum ConversationStatus {
 // turns es Json (array de {buyerMessage, agentReply}) — misma razón que
 // needs/motivations/objections en Profile: MVP, sin necesidad de tabla
 // relacionada todavía.
+// sessionId ya no es único — una sesión puede tener varias Conversaciones
+// a lo largo del tiempo, pero la app nunca deja más de una ACTIVA a la vez
+// (ver resolve-conversation.ts) — no es un constraint de DB, es de aplicación.
 model Conversation {
   id        Int                @id @default(autoincrement())
-  sessionId String             @unique
+  sessionId String
   status    ConversationStatus @default(ACTIVA)
   turns     Json               @default("[]")
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
+
+  @@index([sessionId])
 }
 
 enum AnalyticsEventType {
@@ -219,6 +224,7 @@ enum AnalyticsEventType {
   OBJECTION_CAPTURED
   BUDGET_CAPTURED
   FUNNEL_STAGE_REACHED
+  NEW_CONVERSATION_WARNING_DECIDED
 }
 
 model AnalyticsEvent {

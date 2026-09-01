@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { Card, Input, Spinner, buttonVariants } from '@heroui/react'
 import { listVehicles } from '../../api/vehicles'
 import type { Vehicle } from '../../types/vehicle'
 import { VehicleCard } from '../../components/vehicle/VehicleCard'
@@ -15,8 +16,7 @@ const BRANDS = [
 ] as const
 const CATEGORIES = ['SUV', 'SEDAN', 'PICKUP', 'HATCHBACK', 'COMPACTO'] as const
 
-const selectClass = 'rounded-lg border border-neutral-300 px-3 py-2 text-sm'
-const inputClass = 'flex-1 rounded-lg border border-neutral-300 px-3 py-2 text-sm'
+const selectClass = 'rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground'
 
 export function Catalog() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -50,18 +50,15 @@ export function Catalog() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col items-start justify-between gap-4 rounded-xl bg-blue-50 p-6 sm:flex-row sm:items-center">
+      <Card variant="secondary" className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-xl font-semibold">Encontrá tu próximo vehículo</h1>
-          <p className="text-neutral-500">Compará hasta 4 vehículos lado a lado.</p>
+          <p className="text-muted">Compará hasta 4 vehículos lado a lado.</p>
         </div>
-        <Link
-          to="/quiz"
-          className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
-        >
+        <Link to="/quiz" className={buttonVariants()}>
           Ayudame a elegir
         </Link>
-      </div>
+      </Card>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <select
@@ -88,20 +85,22 @@ export function Catalog() {
             </option>
           ))}
         </select>
-        <input
-          className={inputClass}
+        <Input
+          fullWidth
           placeholder="Buscar modelo o versión"
           value={search}
           onChange={(e) => updateParam('search', e.target.value)}
         />
       </div>
 
-      {error ? <p className="text-red-600">No pudimos cargar el catálogo.</p> : null}
+      {error ? <p className="text-danger">No pudimos cargar el catálogo.</p> : null}
       {vehicles === null && !error ? (
-        <p className="py-12 text-center text-neutral-500">Cargando...</p>
+        <div className="flex items-center justify-center gap-2 py-12 text-muted">
+          <Spinner /> Cargando...
+        </div>
       ) : null}
       {vehicles?.length === 0 ? (
-        <p className="text-neutral-500">No encontramos vehículos con esos filtros.</p>
+        <p className="text-muted">No encontramos vehículos con esos filtros.</p>
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

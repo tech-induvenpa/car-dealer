@@ -1,4 +1,5 @@
 import { Turn, TurnIntentSignal } from '../conversation.aggregate';
+import { FunnelStage } from '../services/funnel-stage';
 import { MotivationCategory, NeedCategory, ObjectionCategory } from '../../../profile/domain/profile.aggregate';
 
 export const LLM_PORT = Symbol('LlmPort');
@@ -34,6 +35,46 @@ export interface ExtractedContact {
   phone: string;
 }
 
+// ponytail: espejo primitivo de VehicleSpecs (mismos campos, sin importar
+// los enums de Vehicles — mismo criterio que brand/category acá abajo, ya
+// castings a string). Se manda completa a propósito: la primera versión
+// solo mandaba brand/model/trim/year/category/price y el Agente no podía
+// responder preguntas de ficha técnica (ej. consumo) — encontrado probando
+// manualmente. Con 5 vehículos publicados hoy esto es barato; si el
+// catálogo crece mucho, la mejora es mandar ficha completa solo de los
+// vehículos ya referenciados en la Conversación, no de todo el catálogo.
+export interface CandidateVehicleSpecs {
+  displacementCc: number | null;
+  cylinders: number | null;
+  horsepowerHp: number | null;
+  torqueNm: number | null;
+  fuelType: string;
+  transmissionType: string;
+  transmissionSpeeds: number | null;
+  driveType: string;
+  lengthMm: number | null;
+  widthMm: number | null;
+  heightMm: number | null;
+  wheelbaseMm: number | null;
+  trunkCapacityL: number | null;
+  weightKg: number | null;
+  passengerCapacity: number | null;
+  fuelEconomyValue: number | null;
+  fuelEconomyUnit: string | null;
+  fuelEconomyNormalizedKmPerL: number | null;
+  tankCapacityL: number | null;
+  airbagsCount: number | null;
+  hasAbs: boolean;
+  hasStabilityControl: boolean;
+  hasRearCamera: boolean;
+  seatType: string | null;
+  hasBluetooth: boolean;
+  hasCarPlay: boolean;
+  warrantyYears: number | null;
+  warrantyKm: number | null;
+  highlights: string[];
+}
+
 export interface CandidateVehicle {
   vehicleId: number;
   brand: string;
@@ -42,6 +83,17 @@ export interface CandidateVehicle {
   year: number;
   category: string;
   priceUsd: number;
+  specs: CandidateVehicleSpecs;
+}
+
+// Lo que ya se sabe del comprador ANTES de este turno — para que el
+// Agente pregunte por lo que falta, no repita lo que ya tiene (ver pedido
+// del usuario: "preguntas abiertas... acorde a lo que va perfilando").
+export interface ProfileSummary {
+  needs: { category: string; detail: string }[];
+  motivations: { category: string; detail: string }[];
+  objections: { category: string; detail: string }[];
+  budgetRange: { min: number; max: number } | null;
 }
 
 export interface LlmReplyContext {
@@ -51,6 +103,12 @@ export interface LlmReplyContext {
   // forma de recomendar un vehicleId real, solo de alucinar uno (ver
   // vehicles/domain/ports/vehicle.repository.ts#findAllPublished).
   candidateVehicles: CandidateVehicle[];
+  // Etapa ANTES de este turno (inferFunnelStage sobre el estado previo) —
+  // le da al LLM el mismo criterio que ya usa el sistema para decidir su
+  // propio comportamiento (ej. siempre preguntar algo abierto en
+  // DESCUBRIMIENTO), sin que sea un Estado forzado (ver funnel-stage.ts).
+  currentStage: FunnelStage;
+  profileSummary: ProfileSummary;
 }
 
 // Señal estructurada, no texto libre — la enforcement de INV-2/INV-6 la hace
