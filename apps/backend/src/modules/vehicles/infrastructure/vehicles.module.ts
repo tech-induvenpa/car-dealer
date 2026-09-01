@@ -27,5 +27,9 @@ import { VehiclesController } from './vehicles.controller';
     CompareVehiclesByIdHandler,
     { provide: VEHICLE_REPOSITORY, useClass: VehicleRepositoryAdapter },
   ],
+  // exporta el puerto para que Agent (CEB-42) pueda leer candidatos del
+  // catálogo real sin duplicar lógica de lectura — Catalog sigue siendo
+  // upstream, Agent solo lo referencia, igual que Leads/Analytics.
+  exports: [VEHICLE_REPOSITORY],
 })
 export class VehiclesModule {}

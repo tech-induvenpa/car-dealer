@@ -1,29 +1,41 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Badge, buttonVariants } from '@heroui/react'
 import { useComparison } from '../../context/ComparisonContext'
+import { getActiveConversation } from '../../api/agent'
 
 export function Header() {
   const { vehicleIds } = useComparison()
+  const [hasActiveConversation, setHasActiveConversation] = useState(false)
+
+  useEffect(() => {
+    getActiveConversation().then((conversation) => setHasActiveConversation(Boolean(conversation)))
+  }, [])
 
   return (
-    <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border bg-surface/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link to="/" className="text-lg font-semibold">
+        <Link to="/" className="text-lg font-semibold text-foreground">
           Car Dealer
         </Link>
         <nav className="flex items-center gap-4">
-          <Link to="/" className="text-sm text-neutral-500 hover:text-neutral-900">
+          <Link to="/" className="text-sm text-muted hover:text-foreground">
             Catálogo
           </Link>
-          {vehicleIds.length > 0 ? (
-            <Link
-              to="/comparar"
-              className="relative rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-            >
-              Comparar
-              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                {vehicleIds.length}
-              </span>
+          {hasActiveConversation ? (
+            <Link to="/asistente" className="text-sm text-muted hover:text-foreground">
+              Volver al chat
             </Link>
+          ) : null}
+          {vehicleIds.length > 0 ? (
+            <Badge.Anchor>
+              <Link to="/comparar" className={buttonVariants({ size: 'sm' })}>
+                Comparar
+              </Link>
+              <Badge color="danger" placement="top-right">
+                {vehicleIds.length}
+              </Badge>
+            </Badge.Anchor>
           ) : null}
         </nav>
       </div>

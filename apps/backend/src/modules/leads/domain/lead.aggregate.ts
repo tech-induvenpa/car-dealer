@@ -18,6 +18,7 @@ export interface CreateLeadProps {
   lastName: string;
   phone: string;
   vehicleIds: number[];
+  profileId?: number | null;
 }
 
 export interface ReconstructLeadProps extends CreateLeadProps {
@@ -33,6 +34,7 @@ export class Lead extends AggregateRoot {
     private readonly _phone: string,
     private readonly _vehicleIds: number[],
     private _status: LeadStatus,
+    private readonly _profileId: number | null,
   ) {
     super();
   }
@@ -41,7 +43,15 @@ export class Lead extends AggregateRoot {
     if (props.vehicleIds.length === 0) {
       throw new EmptyVehicleSelectionException();
     }
-    return new Lead(null, props.firstName, props.lastName, props.phone, props.vehicleIds, LeadStatus.NUEVO);
+    return new Lead(
+      null,
+      props.firstName,
+      props.lastName,
+      props.phone,
+      props.vehicleIds,
+      LeadStatus.NUEVO,
+      props.profileId ?? null,
+    );
   }
 
   static reconstruct(props: ReconstructLeadProps): Lead {
@@ -52,6 +62,7 @@ export class Lead extends AggregateRoot {
       props.phone,
       props.vehicleIds,
       props.status,
+      props.profileId ?? null,
     );
   }
 
@@ -94,5 +105,9 @@ export class Lead extends AggregateRoot {
 
   get status(): LeadStatus {
     return this._status;
+  }
+
+  get profileId(): number | null {
+    return this._profileId;
   }
 }

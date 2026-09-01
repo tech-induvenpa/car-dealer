@@ -4,7 +4,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { HealthController } from './health.controller';
 import { AnalyticsModule } from './modules/analytics/infrastructure/analytics.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { AgentModule } from './modules/agent/infrastructure/agent.module';
 import { LeadsModule } from './modules/leads/infrastructure/leads.module';
+import { ProfileModule } from './modules/profile/infrastructure/profile.module';
 import { VehiclesModule } from './modules/vehicles/infrastructure/vehicles.module';
 
 @Module({
@@ -14,6 +16,8 @@ import { VehiclesModule } from './modules/vehicles/infrastructure/vehicles.modul
     AuthModule,
     VehiclesModule,
     LeadsModule,
+    ProfileModule,
+    AgentModule,
     AnalyticsModule,
   ],
   controllers: [HealthController],

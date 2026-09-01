@@ -16,6 +16,7 @@ type AnalyticsEventType =
   | 'VEHICLE_ADDED_TO_COMPARISON'
   | 'COMPARISON_PERFORMED'
   | 'QUIZ_COMPLETED'
+  | 'NEW_CONVERSATION_WARNING_DECIDED'
 
 interface TrackEventInput {
   type: AnalyticsEventType

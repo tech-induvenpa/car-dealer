@@ -8,6 +8,7 @@ import { Catalog } from './pages/public/Catalog'
 import { Quiz } from './pages/public/Quiz'
 import { VehicleDetail } from './pages/public/VehicleDetail'
 import { Comparison } from './pages/public/Comparison'
+import { Assistant } from './pages/public/Assistant'
 import { AdminLogin } from './pages/admin/Login'
 import { AdminDashboard } from './pages/admin/Dashboard'
 import { AdminVehicleTable } from './pages/admin/VehicleTable'
@@ -25,6 +26,7 @@ function App() {
               <Route path="/quiz" element={<Quiz />} />
               <Route path="/vehiculos/:id" element={<VehicleDetail />} />
               <Route path="/comparar" element={<Comparison />} />
+              <Route path="/asistente" element={<Assistant />} />
             </Route>
 
             <Route path="/admin/login" element={<AdminLogin />} />

@@ -11,6 +11,7 @@ export class LeadMapper {
       phone: row.phone,
       vehicleIds: row.vehicleIds,
       status: row.status as unknown as LeadStatus,
+      profileId: row.profileId,
     });
   }
 
@@ -21,6 +22,7 @@ export class LeadMapper {
       phone: lead.phone,
       vehicleIds: lead.vehicleIds,
       status: lead.status as unknown as Prisma.LeadCreateInput['status'],
+      profileId: lead.profileId,
     };
   }
 }
