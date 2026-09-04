@@ -19,6 +19,11 @@ const ALLOWED_TRANSITIONS: Record<ConversationStatus, ConversationStatus[]> = {
 // exista un adapter real (ver funnel-stage.ts).
 export type TurnIntentSignal = 'EXPLORATORIO' | 'DECISIVO';
 
+// Cómo respondió el comprador en este turno: tapeando un Atajo o escribiendo.
+// Es la señal que el PRD de producto pedía medir, y sale del mismo campo que
+// trae el hecho determinista del Atajo — una cosa, dos problemas.
+export type TurnInputMethod = 'TAP' | 'TYPE';
+
 export interface Turn {
   buyerMessage: string;
   agentReply: string;
@@ -27,6 +32,7 @@ export interface Turn {
   // Catalog (CatalogGroundingGuard) — insumo para refinar inferFunnelStage
   // ("Comparación asistida") más adelante, ver funnel-stage.ts.
   referencedVehicleIds: number[];
+  inputMethod: TurnInputMethod;
 }
 
 export interface CreateConversationProps {
@@ -63,11 +69,15 @@ export class Conversation extends AggregateRoot {
     agentReply: string,
     intentSignal: TurnIntentSignal | null = null,
     referencedVehicleIds: number[] = [],
+    inputMethod: TurnInputMethod = 'TYPE',
   ): void {
     if (this._status !== ConversationStatus.ACTIVA) {
       throw new ConversationNotActiveException();
     }
-    this._turns = [...this._turns, { buyerMessage, agentReply, intentSignal, referencedVehicleIds }];
+    this._turns = [
+      ...this._turns,
+      { buyerMessage, agentReply, intentSignal, referencedVehicleIds, inputMethod },
+    ];
   }
 
   changeStatus(newStatus: ConversationStatus): void {

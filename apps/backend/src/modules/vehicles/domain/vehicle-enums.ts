@@ -61,6 +61,7 @@ export enum VehicleCategory {
   PICKUP = 'PICKUP',
   HATCHBACK = 'HATCHBACK',
   COMPACTO = 'COMPACTO',
+  MINIVAN = 'MINIVAN',
 }
 
 export enum FuelType {

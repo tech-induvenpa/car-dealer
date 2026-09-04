@@ -53,6 +53,7 @@ describe('CaptureNeedHandler', () => {
       motivations: [],
       objections: [],
       budgetRange: null,
+      contact: null,
     });
     const repository: jest.Mocked<ProfileRepository> = {
       findBySessionId: jest.fn().mockResolvedValue(existing),

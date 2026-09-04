@@ -17,4 +17,8 @@ export enum AnalyticsEventType {
   // Conversación anterior (señal barata de interés en historial, ver
   // memoria de proyecto sobre la idea de monetización).
   NEW_CONVERSATION_WARNING_DECIDED = 'NEW_CONVERSATION_WARNING_DECIDED',
+  // CEB-87: criterio de ÉXITO del pivote, separado de COMPARISON_PERFORMED
+  // (adopción) — con la regla 9 el Agente puede contrastar un par y no
+  // llegar a Veredicto, así que un solo evento no puede medir las dos cosas.
+  VERDICT_DELIVERED = 'VERDICT_DELIVERED',
 }

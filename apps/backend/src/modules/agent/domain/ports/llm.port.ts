@@ -29,6 +29,17 @@ export interface ExtractedBudget {
   max: number;
 }
 
+// Lo que el modelo PROPONE como Veredicto. No es el Veredicto todavía: el
+// código lo audita contra los Ganadores de comparación antes de dejarlo salir
+// (ver domain/services/verdict-verifier.ts). El Campo decisivo viaja
+// estructurado justamente para poder verificarlo — inferirlo del texto
+// convertiría la regla en una promesa del prompt.
+export interface ProposedVerdictFromLlm {
+  recommendedVehicleId: number;
+  decisiveField: string;
+  reason: string;
+}
+
 export interface ExtractedContact {
   firstName: string;
   lastName: string;
@@ -136,6 +147,15 @@ export interface LlmReply {
   // gate de INV-4 (assertCanRequestContact) decide si se puede usar de
   // verdad para crear un Lead (ver CEB-47).
   extractedContact?: ExtractedContact | null;
+  // Campos más de la respuesta por turno, NO una llamada aparte: la respuesta
+  // ya es estructurada, y un segundo round-trip duplicaría latencia y costo
+  // justo en el turno más importante de la conversación.
+  proposedVerdict?: ProposedVerdictFromLlm | null;
+  // Respuestas pre-formuladas que el Agente ofrece para ESTE turno. No son
+  // Atajos: un Atajo lleva un hecho de conjunto cerrado que el sistema conoce
+  // de antemano; esto es texto que el comprador puede tapear en vez de
+  // escribir. Las dos cosas son un tap, solo una es determinista.
+  suggestedReplies?: string[];
 }
 
 // Puerto hexagonal: aísla al Agente del proveedor LLM concreto (ver

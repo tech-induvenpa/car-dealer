@@ -7,7 +7,10 @@ export class Price {
   ) {}
 
   static create(amount: number, includes?: string | null): Price {
-    if (amount <= 0) {
+    // ponytail: 0 = precio por confirmar (catálogo cargado antes de tener la
+    // lista de precios). Ojo: un Vehículo en 0 publicado gana TODA comparación
+    // por precio — archivarlo hasta cargarle el precio real.
+    if (amount < 0) {
       throw new InvalidPriceException(amount);
     }
     return new Price(amount, includes ?? null);

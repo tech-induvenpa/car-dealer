@@ -32,7 +32,7 @@ export function LeadForm({ vehicleIds }: { vehicleIds: number[] }) {
   return (
     <Card>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <h3 className="font-medium">¿Te interesa alguno de estos? Dejanos tus datos</h3>
+        <h3 className="font-medium">¿Te interesa alguno de estos? Déjanos tus datos</h3>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Input
             fullWidth

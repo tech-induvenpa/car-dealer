@@ -82,6 +82,7 @@ export class AnalyticsEvent {
       case AnalyticsEventType.OBJECTION_CAPTURED:
       case AnalyticsEventType.BUDGET_CAPTURED:
       case AnalyticsEventType.FUNNEL_STAGE_REACHED:
+      case AnalyticsEventType.VERDICT_DELIVERED:
         if (props.metadata == null) {
           throw new InconsistentAnalyticsEventException(props.type, 'metadata');
         }

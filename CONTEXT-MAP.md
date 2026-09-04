@@ -20,7 +20,7 @@ Bounded contexts del backend de car-dealer. Ver `PRODUCT-MAP.md` para la vista d
 - **Catalog → Agent** (upstream/downstream): Agent sugiere y compara `Vehículo` por ID — referencia únicamente.
 - **Agent → Profile**: Agent construye y actualiza el Perfil a medida que la Conversación avanza.
 - **Agent → Leads**: Agent crea un Lead cuando el comprador deja contacto real, siguiendo las mismas reglas que ya tiene Leads (mínimo 1 Vehículo, sin campos demográficos extra).
-- **Leads → Profile** (referencia opcional): Lead referencia Perfil por `profileId`, nullable — presente solo si el Lead se originó desde el Agente; un Lead del Wizard actual queda con `profileId = null`.
+- **Leads → Profile** (referencia opcional): Lead referencia Perfil por `profileId`, nullable — presente solo si el Lead se originó desde el Agente; un Lead del formulario de la vista de par (camino del visitante frío) queda con `profileId = null`.
 - **Profile → Analytics** (integración por eventos, no dependencia directa): Profile publica eventos en momentos clave (ej. Presupuesto capturado, Objeción registrada); Analytics los consume. Profile no sabe que Analytics existe.
 - **Agent → Analytics** (integración por eventos, no dependencia directa): Agent publica un evento por cada Etapa del funnel alcanzada; Analytics los consume para patrones agregados, sin que Agent sepa que Analytics existe.
 

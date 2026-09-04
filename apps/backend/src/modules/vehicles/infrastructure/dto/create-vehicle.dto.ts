@@ -7,9 +7,9 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
-  IsPositive,
+  Min,
   IsString,
-  IsUrl,
+  Matches,
   ValidateNested,
 } from 'class-validator';
 import {
@@ -60,9 +60,16 @@ export class CreateVehicleDto {
   @IsString() model: string;
   @IsString() trim: string;
   @IsInt() year: number;
-  @IsNumber() @IsPositive() price: number;
+  // ponytail: 0 = precio por confirmar (ver Price.create) — permite cargar
+  // el catálogo antes de tener la lista de precios.
+  @IsNumber() @Min(0) price: number;
   @IsOptional() @IsString() priceIncludes?: string;
-  @IsUrl() mainImageUrl: string;
+  // ponytail: URL http(s) absoluta o ruta relativa a una imagen servida
+  // desde apps/frontend/public — sin módulo de upload ni CDN todavía.
+  @Matches(/^(https?:\/\/\S+|\/[\w\-./]+\.(png|jpe?g|webp|avif))$/i, {
+    message: 'mainImageUrl debe ser una URL http(s) o una ruta relativa a una imagen',
+  })
+  mainImageUrl: string;
   @IsEnum(VehicleCategory) category: VehicleCategory;
 
   @IsDefined()

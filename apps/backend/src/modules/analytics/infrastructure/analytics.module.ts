@@ -8,6 +8,8 @@ import { MotivationCapturedListener } from '../application/listeners/motivation-
 import { ObjectionCapturedListener } from '../application/listeners/objection-captured.listener';
 import { BudgetCapturedListener } from '../application/listeners/budget-captured.listener';
 import { FunnelStageReachedListener } from '../application/listeners/funnel-stage-reached.listener';
+import { VerdictDeliveredListener } from '../application/listeners/verdict-delivered.listener';
+import { ComparisonPerformedListener } from '../application/listeners/comparison-performed.listener';
 import { GetDashboardHandler } from '../application/queries/get-dashboard.handler';
 import { ANALYTICS_EVENT_REPOSITORY } from '../domain/ports/analytics-event.repository';
 import { AnalyticsController } from './analytics.controller';
@@ -25,6 +27,8 @@ import { AnalyticsEventRepositoryAdapter } from './persistence/analytics-event.r
     ObjectionCapturedListener,
     BudgetCapturedListener,
     FunnelStageReachedListener,
+    VerdictDeliveredListener,
+    ComparisonPerformedListener,
     { provide: ANALYTICS_EVENT_REPOSITORY, useClass: AnalyticsEventRepositoryAdapter },
   ],
 })

@@ -3,6 +3,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* La app no definía ninguna tipografía y caía al stack del sistema. En un
+   producto conversacional el texto ES la interfaz, así que el pivote (CEB-78)
+   agrega una: Bricolage Grotesque para display —precios, titulares, nombres de
+   modelo— e Instrument Sans para texto e interfaz. Es lo único que se suma al
+   tema de HeroUI; color, radios, sombras y alturas de control salen de ahí sin
+   tocarse. */
+@theme {
+  --font-sans: "Instrument Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Bricolage Grotesque", "Arial Narrow", "Helvetica Neue", sans-serif;
+}
+
 body {
-  @apply bg-background text-foreground;
+  @apply bg-background font-sans text-foreground;
+}
+
+/* Altura mínima táctil. El botón de HeroUI mide 40px y así se queda para los
+   componentes que ya existían; los Atajos y campos del chat, que son LA
+   interacción del pivote, van a 44. */
+.tap-target {
+  @apply min-h-11;
 }

@@ -10,7 +10,12 @@ function conversationWithTurns(
     id: 1,
     sessionId: 'session-1',
     status: ConversationStatus.ACTIVA,
-    turns: turns.map((t) => ({ ...t, intentSignal: t.intentSignal ?? null, referencedVehicleIds: [] })),
+    turns: turns.map((t) => ({
+      ...t,
+      intentSignal: t.intentSignal ?? null,
+      referencedVehicleIds: [],
+      inputMethod: 'TYPE' as const,
+    })),
   });
 }
 
@@ -22,6 +27,7 @@ function profileWith(overrides: { needs?: number; budget?: boolean } = {}): Prof
     motivations: [],
     objections: [],
     budgetRange: null,
+      contact: null,
   });
   if (overrides.needs) {
     for (let i = 0; i < overrides.needs; i++) profile.captureNeed('SUV', 'detalle');

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, Spinner } from '@heroui/react'
+import { Spinner } from '@heroui/react'
 import { getVehicle } from '../../api/vehicles'
 import type { Vehicle } from '../../types/vehicle'
-import { useComparison } from '../../context/ComparisonContext'
 import { SpecCard } from '../vehicle/SpecCard'
 import { FuelIcon, ShieldIcon, TrunkIcon } from '../icons'
 
@@ -22,7 +21,6 @@ export function VehiclePanel({
 }) {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
-  const { vehicleIds: trayIds, addVehicle, removeVehicle, isFull } = useComparison()
 
   useEffect(() => {
     let cancelled = false
@@ -51,7 +49,6 @@ export function VehiclePanel({
 
   if (vehicles.length === 1) {
     const vehicle = vehicles[0]
-    const inComparison = trayIds.includes(vehicle.id)
     return (
       <div className="flex flex-col gap-4">
         <img
@@ -64,7 +61,7 @@ export function VehiclePanel({
           <h2 className="mt-1 text-xl font-bold text-foreground">
             {vehicle.brand} {vehicle.model} {vehicle.trim}
           </h2>
-          <p className="mt-1 text-2xl font-bold text-foreground">{formatPrice(vehicle.price)}</p>
+          <p className="mt-1 font-display text-3xl font-extrabold tracking-tight text-foreground">{formatPrice(vehicle.price)}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -76,7 +73,7 @@ export function VehiclePanel({
             />
           ) : null}
           {vehicle.trunkCapacityL ? (
-            <SpecCard icon={<TrunkIcon className="h-5 w-5" />} label="Baúl" value={`${vehicle.trunkCapacityL} L`} />
+            <SpecCard icon={<TrunkIcon className="h-5 w-5" />} label="Maletero" value={`${vehicle.trunkCapacityL} L`} />
           ) : null}
           {vehicle.airbagsCount ? (
             <SpecCard
@@ -86,15 +83,6 @@ export function VehiclePanel({
             />
           ) : null}
         </div>
-
-        <Button
-          variant={inComparison ? 'danger-soft' : 'primary'}
-          fullWidth
-          isDisabled={!inComparison && isFull}
-          onPress={() => (inComparison ? removeVehicle(vehicle.id) : addVehicle(vehicle.id))}
-        >
-          {inComparison ? 'Quitar de comparación' : 'Agregar a comparación'}
-        </Button>
 
         <Link to={`/vehiculos/${vehicle.id}`} className="text-center text-sm text-accent hover:underline">
           Ver ficha completa
@@ -118,7 +106,7 @@ export function VehiclePanel({
               <p className="text-sm leading-tight font-medium text-foreground">
                 {vehicle.brand} {vehicle.model} {vehicle.trim}
               </p>
-              <p className="text-sm font-semibold text-foreground">{formatPrice(vehicle.price)}</p>
+              <p className="font-display text-base font-bold tracking-tight text-foreground">{formatPrice(vehicle.price)}</p>
               <button
                 type="button"
                 onClick={() => onSelectSingle(vehicle.id)}

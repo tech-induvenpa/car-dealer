@@ -12,6 +12,8 @@ describe('parseLlmReplyJson', () => {
       extractedObjection: null,
       extractedBudget: null,
       extractedContact: null,
+      proposedVerdict: null,
+      suggestedReplies: [],
     });
   });
 
@@ -26,6 +28,8 @@ describe('parseLlmReplyJson', () => {
       extractedObjection: null,
       extractedBudget: { min: 0, max: 20000 },
       extractedContact: null,
+      proposedVerdict: null,
+      suggestedReplies: [],
     };
     expect(parseLlmReplyJson(JSON.stringify(full))).toEqual(full);
   });

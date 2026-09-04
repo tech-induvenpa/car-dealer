@@ -27,7 +27,7 @@ describe('LeadMapper round-trip', () => {
     expect(roundTrip(lead).profileId).toBe(42);
   });
 
-  it('reproduces profileId when it is null (e.g. a Lead from the Wizard)', () => {
+  it('reproduces profileId when it is null (e.g. a Lead from the pair-view form)', () => {
     const lead = Lead.reconstruct({
       id: 2,
       firstName: 'Ana',

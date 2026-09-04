@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Button, Chip, Spinner, buttonVariants } from '@heroui/react'
+import { Chip, Spinner, buttonVariants } from '@heroui/react'
 import { getVehicle } from '../../api/vehicles'
 import { trackEvent } from '../../api/analytics'
 import type { FuelType, Vehicle } from '../../types/vehicle'
-import { useComparison } from '../../context/ComparisonContext'
 import { ArrowLeftIcon, FuelIcon, ShieldIcon, TrunkIcon } from '../../components/icons'
 import { SpecCard } from '../../components/vehicle/SpecCard'
 
@@ -33,7 +32,6 @@ export function VehicleDetail() {
   const { id } = useParams<{ id: string }>()
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [notFound, setNotFound] = useState(false)
-  const { vehicleIds, addVehicle, removeVehicle, isFull } = useComparison()
 
   useEffect(() => {
     if (!id) return
@@ -51,7 +49,7 @@ export function VehicleDetail() {
     return (
       <div className="py-12 text-center">
         <p className="mb-4 text-muted">No encontramos ese vehículo.</p>
-        <Link to="/" className={buttonVariants()}>
+        <Link to="/catalogo" className={buttonVariants()}>
           Volver al catálogo
         </Link>
       </div>
@@ -66,14 +64,13 @@ export function VehicleDetail() {
     )
   }
 
-  const inComparison = vehicleIds.includes(vehicle.id)
   const safetyFeatures = [vehicle.hasAbs && 'ABS', vehicle.hasStabilityControl && 'Control de estabilidad']
     .filter(Boolean)
     .join(' · ')
 
   return (
     <div className="flex flex-col gap-6">
-      <Link to="/" className="flex w-fit items-center gap-1 text-sm text-muted hover:text-foreground">
+      <Link to="/catalogo" className="flex w-fit items-center gap-1 text-sm text-muted hover:text-foreground">
         <ArrowLeftIcon className="h-4 w-4" /> Volver al catálogo
       </Link>
 
@@ -88,7 +85,7 @@ export function VehicleDetail() {
         <div className="flex flex-1 flex-col gap-6">
           <div>
             <p className="text-xs font-semibold tracking-wide text-accent uppercase">{vehicle.category}</p>
-            <h1 className="mt-1 text-3xl font-bold text-foreground">
+            <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-foreground">
               {vehicle.brand} {vehicle.model} {vehicle.trim}
             </h1>
             <p className="text-muted">{vehicle.year}</p>
@@ -116,7 +113,7 @@ export function VehicleDetail() {
             {vehicle.trunkCapacityL ? (
               <SpecCard
                 icon={<TrunkIcon className="h-5 w-5" />}
-                label="Capacidad de baúl"
+                label="Capacidad del maletero"
                 value={`${vehicle.trunkCapacityL} L`}
                 caption={vehicle.passengerCapacity ? `${vehicle.passengerCapacity} pasajeros` : null}
               />
@@ -136,14 +133,11 @@ export function VehicleDetail() {
             />
           </div>
 
-          <Button
-            variant={inComparison ? 'danger-soft' : 'primary'}
-            className="w-fit"
-            isDisabled={!inComparison && isFull}
-            onPress={() => (inComparison ? removeVehicle(vehicle.id) : addVehicle(vehicle.id))}
-          >
-            {inComparison ? 'Quitar de comparación' : 'Agregar a comparación'}
-          </Button>
+          {/* CEB-83: sin bandeja. La ficha lleva al asistente, que es quien
+              elige contra qué compararla. */}
+          <Link to="/" className={buttonVariants({ className: 'w-fit' })}>
+            Preguntale al asistente por este
+          </Link>
 
           <hr className="border-separator" />
 
@@ -168,7 +162,7 @@ export function VehicleDetail() {
 
           <div>
             <h2 className="mb-2 font-medium text-foreground">Dimensiones y capacidad</h2>
-            <Spec label="Baúl" value={vehicle.trunkCapacityL ? `${vehicle.trunkCapacityL} L` : null} />
+            <Spec label="Maletero" value={vehicle.trunkCapacityL ? `${vehicle.trunkCapacityL} L` : null} />
             <Spec label="Pasajeros" value={vehicle.passengerCapacity} />
             <Spec label="Peso" value={vehicle.weightKg ? `${vehicle.weightKg} kg` : null} />
           </div>

@@ -17,7 +17,7 @@ const BRANDS = [
   'LIFAN', 'WULING', 'ZHONGXING', 'ZOTYE', 'HAFEI', 'CHANA', 'CHANGHE', 'VENIRAUTO',
   'VIT', 'DONGFENG', 'FORTHING', 'FOTON', 'ISUZU', 'IVECO', 'MACK',
 ] as const
-const CATEGORIES = ['SUV', 'SEDAN', 'PICKUP', 'HATCHBACK', 'COMPACTO'] as const
+const CATEGORIES = ['SUV', 'SEDAN', 'PICKUP', 'HATCHBACK', 'COMPACTO', 'MINIVAN'] as const
 const FUEL_TYPES = ['GASOLINA', 'DIESEL', 'HIBRIDO', 'ELECTRICO'] as const
 const TRANSMISSION_TYPES = ['MANUAL', 'AUTOMATICA', 'CVT', 'DCT'] as const
 const DRIVE_TYPES = ['FWD_4X2', 'AWD_4X4'] as const
@@ -386,7 +386,7 @@ export function VehicleFormPage() {
               }
             />
           </Field>
-          <Field label="Baúl (L)">
+          <Field label="Maletero (L)">
             <input
               className={inputClass}
               type="number"
