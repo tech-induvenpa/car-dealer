@@ -77,6 +77,7 @@ enum VehicleCategory {
   PICKUP
   HATCHBACK
   COMPACTO
+  MINIVAN
 }
 
 enum FuelType {
@@ -168,8 +169,8 @@ model Lead {
   phone      String
   vehicleIds Int[]
   status     LeadStatus @default(NUEVO)
-  // null cuando el Lead vino del Wizard actual; solo se puebla cuando el
-  // Agente conversacional lo crea (ver leads/CONTEXT.md).
+  // null cuando el Lead vino del formulario de la vista de par (camino del
+  // visitante frío); se puebla cuando lo crea el Agente (ver leads/CONTEXT.md).
   profileId  Int?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
@@ -186,6 +187,12 @@ model Profile {
   objections  Json     @default("[]")
   budgetMin   Int?
   budgetMax   Int?
+  // Contacto: dato declarado más, no una categoría aparte (ADR-0012). Que
+  // esté poblado es lo que vuelve identificable a un Perfil — el Perfil ya
+  // no se define como anónimo, la anonimidad es un atributo que cambia.
+  contactFirstName String?
+  contactLastName  String?
+  contactPhone     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -225,6 +232,9 @@ enum AnalyticsEventType {
   BUDGET_CAPTURED
   FUNNEL_STAGE_REACHED
   NEW_CONVERSATION_WARNING_DECIDED
+  // CEB-87: criterio de éxito del pivote, distinto de COMPARISON_PERFORMED
+  // (adopción) — el Agente puede contrastar un par y no llegar a Veredicto.
+  VERDICT_DELIVERED
 }
 
 model AnalyticsEvent {

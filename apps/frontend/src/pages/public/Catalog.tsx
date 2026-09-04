@@ -14,7 +14,7 @@ const BRANDS = [
   'LIFAN', 'WULING', 'ZHONGXING', 'ZOTYE', 'HAFEI', 'CHANA', 'CHANGHE', 'VENIRAUTO',
   'VIT', 'DONGFENG', 'FORTHING', 'FOTON', 'ISUZU', 'IVECO', 'MACK',
 ] as const
-const CATEGORIES = ['SUV', 'SEDAN', 'PICKUP', 'HATCHBACK', 'COMPACTO'] as const
+const CATEGORIES = ['SUV', 'SEDAN', 'PICKUP', 'HATCHBACK', 'COMPACTO', 'MINIVAN'] as const
 
 const selectClass = 'rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground'
 
@@ -52,11 +52,11 @@ export function Catalog() {
     <div className="flex flex-col gap-6">
       <Card variant="secondary" className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-xl font-semibold">Encontrá tu próximo vehículo</h1>
-          <p className="text-muted">Compará hasta 4 vehículos lado a lado.</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight">El catálogo completo</h1>
+          <p className="text-muted">Mira tranquilo. Cuando quieras, el asistente te ayuda a decidir.</p>
         </div>
-        <Link to="/quiz" className={buttonVariants()}>
-          Ayudame a elegir
+        <Link to="/" className={buttonVariants()}>
+          Preguntale al asistente
         </Link>
       </Card>
 

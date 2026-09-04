@@ -7,14 +7,12 @@ import { CaptureBudgetCommand } from '../application/commands/capture-budget.com
 import { CaptureMotivationCommand } from '../application/commands/capture-motivation.command';
 import { CaptureNeedCommand } from '../application/commands/capture-need.command';
 import { CaptureObjectionCommand } from '../application/commands/capture-objection.command';
-import { CaptureWizardCompletionCommand } from '../application/commands/capture-wizard-completion.command';
 import { GetProfileByIdQuery } from '../application/queries/get-profile-by-id.query';
 import { GetProfileBySessionQuery } from '../application/queries/get-profile-by-session.query';
 import { CaptureBudgetDto } from './dto/capture-budget.dto';
 import { CaptureMotivationDto } from './dto/capture-motivation.dto';
 import { CaptureNeedDto } from './dto/capture-need.dto';
 import { CaptureObjectionDto } from './dto/capture-objection.dto';
-import { CaptureWizardCompletionDto } from './dto/capture-wizard-completion.dto';
 
 @Controller('profile')
 export class ProfileController {
@@ -55,18 +53,6 @@ export class ProfileController {
   async captureBudget(@Body() dto: CaptureBudgetDto): Promise<{ id: number }> {
     const id = await this.commandBus.execute<CaptureBudgetCommand, number>(
       new CaptureBudgetCommand(dto.sessionId, dto.min, dto.max),
-    );
-    return { id };
-  }
-
-  // Completar el Wizard sigue disparando QUIZ_COMPLETED hacia Analytics
-  // sin cambios (ver apps/frontend/src/pages/public/Quiz.tsx) — esta es una
-  // llamada adicional, no un reemplazo (ver CEB-41).
-  @Post('wizard-completion')
-  @UseGuards(ThrottlerGuard)
-  async captureWizardCompletion(@Body() dto: CaptureWizardCompletionDto): Promise<{ id: number }> {
-    const id = await this.commandBus.execute<CaptureWizardCompletionCommand, number>(
-      new CaptureWizardCompletionCommand(dto.sessionId, dto.uso, dto.presupuesto),
     );
     return { id };
   }

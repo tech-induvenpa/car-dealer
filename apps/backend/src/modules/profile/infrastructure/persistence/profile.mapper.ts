@@ -14,6 +14,10 @@ export class ProfileMapper {
         row.budgetMin !== null && row.budgetMax !== null
           ? BudgetRange.reconstruct(row.budgetMin, row.budgetMax)
           : null,
+      contact:
+        row.contactFirstName !== null && row.contactLastName !== null && row.contactPhone !== null
+          ? { firstName: row.contactFirstName, lastName: row.contactLastName, phone: row.contactPhone }
+          : null,
     });
   }
 
@@ -25,6 +29,9 @@ export class ProfileMapper {
       objections: profile.objections as unknown as Prisma.InputJsonValue,
       budgetMin: profile.budgetRange?.min ?? null,
       budgetMax: profile.budgetRange?.max ?? null,
+      contactFirstName: profile.contact?.firstName ?? null,
+      contactLastName: profile.contact?.lastName ?? null,
+      contactPhone: profile.contact?.phone ?? null,
     };
   }
 }

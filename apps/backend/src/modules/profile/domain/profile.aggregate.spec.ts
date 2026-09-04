@@ -40,6 +40,7 @@ describe('Profile aggregate', () => {
         motivations: [],
         objections: [],
         budgetRange: null,
+      contact: null,
       });
     }
 
@@ -108,4 +109,70 @@ describe('Profile aggregate', () => {
       expect(profile.hasAnyData).toBe(true);
     });
   });
+
+  it('una Necesidad nueva reemplaza a la anterior, no se acumula', () => {
+    // Las categorías son carrocerías mutuamente excluyentes: quien dice
+    // "familiar" y después "para ciudad" cambió de idea. Acumularlas mandaba al
+    // Agente un profileSummary que se contradecía a sí mismo.
+    const profile = Profile.reconstruct({
+      id: 1,
+      sessionId: 's',
+      needs: [],
+      motivations: [],
+      objections: [],
+      budgetRange: null,
+      contact: null,
+    });
+
+    profile.captureNeed('SUV', 'uso familiar');
+    profile.captureNeed('COMPACTO', 'para ciudad');
+
+    expect(profile.needs).toEqual([{ category: 'COMPACTO', detail: 'para ciudad' }]);
+  });
+
+  it('olvidar lo declarado limpia los hechos pero conserva el Contacto', () => {
+    // Empezar de nuevo no puede costarte un teléfono ya dado.
+    const profile = Profile.reconstruct({
+      id: 1,
+      sessionId: 's',
+      needs: [{ category: 'SUV', detail: 'familiar' }],
+      motivations: [],
+      objections: [],
+      budgetRange: null,
+      contact: { firstName: 'Ana', lastName: 'Pérez', phone: '0414-1234567' },
+    });
+    profile.captureBudget(0, 20000);
+
+    profile.forgetDeclaredFacts();
+
+    expect(profile.needs).toEqual([]);
+    expect(profile.budgetRange).toBeNull();
+    expect(profile.contact).toEqual({ firstName: 'Ana', lastName: 'Pérez', phone: '0414-1234567' });
+    expect(profile.hasAnyData).toBe(true);
+  });
+
+
+  it('una Objeción de la misma categoría actualiza la anterior, pero convive con otras', () => {
+    // Que le preocupe el precio Y la marca es normal. Decir dos veces algo del
+    // precio es actualizar esa objeción, no tener dos.
+    const profile = Profile.reconstruct({
+      id: 1,
+      sessionId: 's',
+      needs: [],
+      motivations: [],
+      objections: [],
+      budgetRange: null,
+      contact: null,
+    });
+
+    profile.captureObjection('PRECIO', 'está caro');
+    profile.captureObjection('MARCA', 'no conozco Changan');
+    profile.captureObjection('PRECIO', 'la inicial es muy alta');
+
+    expect(profile.objections).toEqual([
+      { category: 'MARCA', detail: 'no conozco Changan' },
+      { category: 'PRECIO', detail: 'la inicial es muy alta' },
+    ]);
+  });
+
 });

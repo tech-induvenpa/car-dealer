@@ -54,7 +54,7 @@ export type Brand =
   | 'IVECO'
   | 'MACK'
 
-export type VehicleCategory = 'SUV' | 'SEDAN' | 'PICKUP' | 'HATCHBACK' | 'COMPACTO'
+export type VehicleCategory = 'SUV' | 'SEDAN' | 'PICKUP' | 'HATCHBACK' | 'COMPACTO' | 'MINIVAN'
 
 export type FuelType = 'GASOLINA' | 'DIESEL' | 'HIBRIDO' | 'ELECTRICO'
 

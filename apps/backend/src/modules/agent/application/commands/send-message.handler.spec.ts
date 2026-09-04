@@ -105,7 +105,11 @@ function llmReturning(reply: LlmReply): jest.Mocked<LlmPort> {
 }
 
 function leadRepository(): jest.Mocked<LeadRepository> {
-  return { save: jest.fn().mockResolvedValue(1), findById: jest.fn() };
+  return {
+    save: jest.fn().mockResolvedValue(1),
+    findById: jest.fn(),
+    existsByProfileId: jest.fn().mockResolvedValue(false),
+  };
 }
 
 function handlerWith(overrides: {
@@ -156,7 +160,14 @@ describe('SendMessageHandler', () => {
         specs: expect.objectContaining({ fuelEconomyNormalizedKmPerL: 15.5, hasAbs: true }),
       }),
     ]);
-    expect(result).toEqual({ conversationId: 1, reply: 'eco: hola', referencedVehicleIds: [] });
+    expect(result).toEqual({
+      conversationId: 1,
+      reply: 'eco: hola',
+      referencedVehicleIds: [],
+      verdict: null,
+      suggestedReplies: [],
+      known: { need: false, budget: false },
+    });
   });
 
   it('continues the given conversationId and appends the new turn to its prior history', async () => {
@@ -164,7 +175,7 @@ describe('SendMessageHandler', () => {
       id: 5,
       sessionId: 'session-existing',
       status: ConversationStatus.ACTIVA,
-      turns: [{ buyerMessage: 'hola', agentReply: 'eco: hola', intentSignal: null, referencedVehicleIds: [] }],
+      turns: [{ buyerMessage: 'hola', agentReply: 'eco: hola', intentSignal: null, referencedVehicleIds: [], inputMethod: 'TYPE' as const }],
     });
     const conversations: jest.Mocked<ConversationRepository> = {
       findActiveBySessionId: jest.fn(),
@@ -193,7 +204,7 @@ describe('SendMessageHandler', () => {
       id: 5,
       sessionId: 'session-existing',
       status: ConversationStatus.ACTIVA,
-      turns: [{ buyerMessage: 'hola', agentReply: 'eco: hola', intentSignal: null, referencedVehicleIds: [] }],
+      turns: [{ buyerMessage: 'hola', agentReply: 'eco: hola', intentSignal: null, referencedVehicleIds: [], inputMethod: 'TYPE' as const }],
     });
     const conversations: jest.Mocked<ConversationRepository> = {
       findActiveBySessionId: jest.fn().mockResolvedValue(existing),
@@ -336,15 +347,15 @@ describe('SendMessageHandler', () => {
       expect(saved.budgetRange?.max).toBe(20000);
     });
 
-    it('does not touch the Profile repository when the LLM extracted nothing new', async () => {
+    // INV-13 (ADR-0012): antes esto igual escribía un Perfil vacío porque
+    // findOrCreateProfile corría en cada turno. Ahora conversar sin declarar
+    // nada no crea Perfil, así que la aserción pasa a ser la directa.
+    it('no crea Perfil cuando el comprador no declaró nada (INV-13)', async () => {
       const profiles = profileRepository();
       const llm = llmReturning({ message: 'Hola, ¿en qué te ayudo?' });
       await handlerWith({ profiles, llm }).execute(new SendMessageCommand('session-profile-3', 'hola'));
 
-      // igual se llama save (findOrCreateProfile crea uno vacío) — lo que
-      // importa es que no queda ningún dato capturado.
-      const saved = profiles.save.mock.calls[profiles.save.mock.calls.length - 1][0] as Profile;
-      expect(saved.hasAnyData).toBe(false);
+      expect(profiles.save).not.toHaveBeenCalled();
     });
 
     it('preserves already-captured Profile facts even if the Conversation later gets abandoned (INV-3)', async () => {
@@ -374,7 +385,7 @@ describe('SendMessageHandler', () => {
         needs: [{ category: 'SUV', detail: 'familia' }],
         motivations: [],
         objections: [],
-        budgetRange: null,
+        budgetRange: null, contact: null,
       });
       profile.captureBudget(0, 20000);
       return profile;
@@ -386,7 +397,7 @@ describe('SendMessageHandler', () => {
         sessionId: 'session-lead',
         status: ConversationStatus.ACTIVA,
         turns: [
-          { buyerMessage: 'quiero el CS35', agentReply: '...', intentSignal: null, referencedVehicleIds: [1] },
+          { buyerMessage: 'quiero el CS35', agentReply: '...', intentSignal: null, referencedVehicleIds: [1], inputMethod: 'TYPE' as const },
         ],
       });
     }
@@ -543,7 +554,7 @@ describe('SendMessageHandler', () => {
         needs: [{ category: 'SUV', detail: 'familia' }],
         motivations: [],
         objections: [],
-        budgetRange: null,
+        budgetRange: null, contact: null,
       });
       profile.captureBudget(0, 20000);
 
@@ -551,7 +562,7 @@ describe('SendMessageHandler', () => {
         id: 4,
         sessionId: 'session-qualified',
         status: ConversationStatus.ACTIVA,
-        turns: [{ buyerMessage: 'hola', agentReply: 'hola!', intentSignal: null, referencedVehicleIds: [] }],
+        turns: [{ buyerMessage: 'hola', agentReply: 'hola!', intentSignal: null, referencedVehicleIds: [], inputMethod: 'TYPE' as const }],
       });
       const conversations: jest.Mocked<ConversationRepository> = {
         findActiveBySessionId: jest.fn(),

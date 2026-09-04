@@ -13,6 +13,7 @@ describe('CreateLeadHandler', () => {
         return 7;
       }),
       findById: jest.fn(),
+      existsByProfileId: jest.fn().mockResolvedValue(false),
     };
     let publishedEvents: LeadSubmittedEvent[] = [];
     // ponytail: AggregateRoot.commit() pasa el array interno por referencia

@@ -30,7 +30,7 @@ describe('Conversation aggregate', () => {
           buyerMessage: '¿tienen SUV familiares?',
           agentReply: 'Sí, tenemos varias opciones...',
           intentSignal: null,
-          referencedVehicleIds: [],
+          referencedVehicleIds: [], inputMethod: 'TYPE' as const,
         },
       ]);
     });

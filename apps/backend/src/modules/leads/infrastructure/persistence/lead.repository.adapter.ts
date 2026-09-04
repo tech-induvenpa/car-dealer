@@ -22,4 +22,9 @@ export class LeadRepositoryAdapter implements LeadRepository {
     const row = await this.prisma.lead.findUnique({ where: { id } });
     return row ? LeadMapper.toDomain(row) : null;
   }
+
+  async existsByProfileId(profileId: number): Promise<boolean> {
+    const count = await this.prisma.lead.count({ where: { profileId } });
+    return count > 0;
+  }
 }

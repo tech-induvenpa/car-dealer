@@ -20,6 +20,7 @@ function existingLead(status: LeadStatus): Lead {
 describe('UpdateLeadStatusHandler', () => {
   it('throws LeadNotFoundException and never saves when the id does not exist', async () => {
     const repository: jest.Mocked<LeadRepository> = {
+      existsByProfileId: jest.fn().mockResolvedValue(false),
       findById: jest.fn().mockResolvedValue(null),
       save: jest.fn(),
     };
@@ -34,6 +35,7 @@ describe('UpdateLeadStatusHandler', () => {
   it('persists a valid transition', async () => {
     const lead = existingLead(LeadStatus.NUEVO);
     const repository: jest.Mocked<LeadRepository> = {
+      existsByProfileId: jest.fn().mockResolvedValue(false),
       findById: jest.fn().mockResolvedValue(lead),
       save: jest.fn().mockResolvedValue(1),
     };
@@ -48,6 +50,7 @@ describe('UpdateLeadStatusHandler', () => {
   it('rejects an invalid transition and never saves', async () => {
     const lead = existingLead(LeadStatus.CONTACTADO);
     const repository: jest.Mocked<LeadRepository> = {
+      existsByProfileId: jest.fn().mockResolvedValue(false),
       findById: jest.fn().mockResolvedValue(lead),
       save: jest.fn(),
     };

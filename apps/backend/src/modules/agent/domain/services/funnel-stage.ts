@@ -10,12 +10,16 @@ export type FunnelStage = 'ENTRADA' | 'CALIFICACION_TEMPRANA' | 'DESCUBRIMIENTO'
 // No es una máquina de estados: se reevalúa desde cero en cada llamada, así
 // que SÍ puede "retroceder" — no hay tabla de transiciones como la de
 // Estado (ver agent/CONTEXT.md, "Etapa del funnel" en Language).
-export function inferFunnelStage(conversation: Conversation, profile: Profile): FunnelStage {
+// profile puede ser null: desde ADR-0012 el Perfil se crea de forma
+// perezosa, así que "todavía no declaró nada" se representa con su ausencia.
+// La ausencia se trata igual que un Perfil vacío — no calificado — nunca
+// como error.
+export function inferFunnelStage(conversation: Conversation, profile: Profile | null): FunnelStage {
   if (conversation.turns.length === 0) {
     return 'ENTRADA';
   }
 
-  const qualified = profile.budgetRange !== null && profile.needs.length > 0;
+  const qualified = profile !== null && profile.budgetRange !== null && profile.needs.length > 0;
   if (!qualified) {
     return 'CALIFICACION_TEMPRANA';
   }

@@ -10,6 +10,7 @@ function unqualifiedProfile(): Profile {
     motivations: [],
     objections: [],
     budgetRange: null,
+      contact: null,
   });
 }
 

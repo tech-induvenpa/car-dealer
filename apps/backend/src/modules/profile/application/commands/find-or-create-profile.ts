@@ -1,9 +1,20 @@
 import { Profile } from '../../domain/profile.aggregate';
 import { ProfileRepository } from '../../domain/ports/profile.repository';
 
-// ponytail: única lógica compartida por los 4 comandos de captura — "dame el
-// Profile de esta sesión, creándolo vacío y persistido si es la primera vez"
-// — se extrae porque las 4 la necesitan igual, no por anticipación.
+// Lectura pura: devuelve el Perfil de la sesión o null. Existe porque desde
+// ADR-0012 el Perfil se crea de forma perezosa — hay caminos (cada turno del
+// Agente) que necesitan leerlo sin materializarlo.
+export async function findProfile(
+  repository: ProfileRepository,
+  sessionId: string,
+): Promise<Profile | null> {
+  return repository.findBySessionId(sessionId);
+}
+
+// "Dame el Profile de esta sesión, creándolo vacío y persistido si es la
+// primera vez". Solo se llama cuando YA hay un hecho declarado que guardar —
+// llamarlo especulativamente es lo que llenaba la tabla de filas de nulls
+// antes de ADR-0012.
 export async function findOrCreateProfile(
   repository: ProfileRepository,
   sessionId: string,
@@ -20,5 +31,6 @@ export async function findOrCreateProfile(
     motivations: [],
     objections: [],
     budgetRange: null,
+    contact: null,
   });
 }

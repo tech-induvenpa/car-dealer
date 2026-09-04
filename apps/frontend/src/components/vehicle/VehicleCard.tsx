@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Button, Card, Chip } from '@heroui/react'
+import { Card, Chip } from '@heroui/react'
 import type { Vehicle } from '../../types/vehicle'
-import { useComparison } from '../../context/ComparisonContext'
 
 const CATEGORY_LABEL: Record<Vehicle['category'], string> = {
   SUV: 'SUV',
@@ -9,16 +8,16 @@ const CATEGORY_LABEL: Record<Vehicle['category'], string> = {
   PICKUP: 'Pickup',
   HATCHBACK: 'Hatchback',
   COMPACTO: 'Compacto',
+  MINIVAN: 'Minivan',
 }
 
 function formatPrice(price: number): string {
   return price.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
 }
 
+// CEB-83: murió el botón "agregar a comparación" — sin bandeja, la tarjeta
+// solo lleva a la ficha.
 export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
-  const { vehicleIds, addVehicle, removeVehicle, isFull } = useComparison()
-  const inComparison = vehicleIds.includes(vehicle.id)
-
   return (
     <Card className="flex h-full flex-col overflow-hidden p-0">
       <Link to={`/vehiculos/${vehicle.id}`}>
@@ -36,16 +35,7 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           {vehicle.brand} {vehicle.model} {vehicle.trim}
         </Link>
         <p className="text-sm text-muted">{vehicle.year}</p>
-        <p className="text-lg font-semibold">{formatPrice(vehicle.price)}</p>
-        <Button
-          variant={inComparison ? 'danger-soft' : 'primary'}
-          fullWidth
-          className="mt-auto"
-          isDisabled={!inComparison && isFull}
-          onPress={() => (inComparison ? removeVehicle(vehicle.id) : addVehicle(vehicle.id))}
-        >
-          {inComparison ? 'Quitar de comparación' : 'Agregar a comparación'}
-        </Button>
+        <p className="font-display text-lg font-bold tracking-tight">{formatPrice(vehicle.price)}</p>
       </div>
     </Card>
   )
